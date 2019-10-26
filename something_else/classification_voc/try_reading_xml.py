@@ -1,11 +1,9 @@
 import xml.etree.cElementTree as et
-import pandas as pd
 import os
 import re
 root = '/media/kai/DATA/dataset/VOC/VOCdevkit/VOC2012'
 xml_root = os.path.join(root,"Annotations")
 original_image_root = os.path.join(root,"JPEGImages")
-
 
 xml_files = os.listdir(xml_root)
 inputfile = open('/home/kai/person_jpgs.txt','w')
@@ -34,6 +32,4 @@ for file in xml_files:
                         is_person = 1
                         break
                 # print("     The node tag is " + node.tag)
-
-
 inputfile.close()
