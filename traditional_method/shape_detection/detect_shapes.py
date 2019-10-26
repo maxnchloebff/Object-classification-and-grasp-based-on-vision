@@ -1,11 +1,12 @@
 # USAGE
 # python detect_shapes.py --image shapes_and_colors.png
 
-# import the necessary packages
-from pyimagesearch.shapedetector import ShapeDetector
 import argparse
-import imutils
+
 import cv2
+import imutils
+# import the necessary packages
+from traditional_method.shape_detection.pyimagesearch.shapedetector import ShapeDetector
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
