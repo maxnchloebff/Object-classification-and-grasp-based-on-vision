@@ -12,6 +12,7 @@ from traditional_method.shape_detection.pyimagesearch.shapedetector import Shape
 # construct the argument parse and parse the arguments
 
 array_add = np.array([1,2,3,4])
+array_add2 = np.array([1,2,3,4])
 ap = argparse.ArgumentParser()
 ap.add_argument("-i", "--image", required=True,
 	help="path to the input image")
