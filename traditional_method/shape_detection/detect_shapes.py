@@ -2,6 +2,7 @@
 # python detect_shapes.py --image shapes_and_colors.png
 
 import argparse
+import numpy as np
 
 import cv2
 import imutils
@@ -9,6 +10,8 @@ import imutils
 from traditional_method.shape_detection.pyimagesearch.shapedetector import ShapeDetector
 
 # construct the argument parse and parse the arguments
+
+array_add = np.array([1,2,3,4])
 ap = argparse.ArgumentParser()
 ap.add_argument("-i", "--image", required=True,
 	help="path to the input image")
