@@ -82,20 +82,28 @@ class ShapeDetector:
 			if shape == 'square':
 				absAngles = map(abs, angles)
 				absAngles = list(absAngles)
+				absAngles.sort(key=lambda x: min(180 - x, x))
 				angle = angles[absAngles.index(min(absAngles))]
+				if angle > 90:
+					angle = 180 - angle
 			else:
 				absAngles = map(abs, angles)
 				absAngles = list(absAngles)
+				absAngles.sort(key=lambda x: min(180 - x, x))
 				angle = angles[absAngles.index(min(absAngles))]
+				if angle > 90:
+					angle = 180 - angle
 
 		# if the shape is a pentagon, it will have 5 vertices
 		elif len(approx) == 5:
 			shape = "pentagon"
 			absAngles = map(abs,angles)
 			absAngles = list(absAngles)
+			absAngles.sort(key=lambda x:min(180-x,x))
 			angle = angles[absAngles.index(min(absAngles))]
 
-		# otherwise, we assume the shape is a circle
+
+	 	# otherwise, we assume the shape is a circle
 		else:
 			shape = "circle"
 			angle = None
