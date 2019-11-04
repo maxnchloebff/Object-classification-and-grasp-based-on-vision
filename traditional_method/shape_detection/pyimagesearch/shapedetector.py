@@ -2,6 +2,7 @@
 import cv2
 import math
 import operator
+import numpy as np
 def cal_angle(v1,v2):
 	angle1 = math.atan2(v1[1], v1[0])
 	angle1 = int(angle1 * 180 / math.pi)
@@ -30,7 +31,7 @@ class ShapeDetector:
 	def detect(self, c):
 		# initialize the shape name and approximate the contour
 		shape = "unidentified"
-		angle = 0
+		info = []
 		peri = cv2.arcLength(c, True)
 		approx = cv2.approxPolyDP(c, 0.04 * peri, True)
 		corner_points = [[point[0][0],point[0][1]] for point in approx]
@@ -73,12 +74,30 @@ class ShapeDetector:
 		elif len(approx) == 4:
 			# compute the bounding box of the contour and use the
 			# bounding box to compute the aspect ratio
-			(x, y, w, h) = cv2.boundingRect(approx)
-			ar = w / float(h)
 
-			# a square will have an aspect ratio that is approximately
-			# equal to one, otherwise, the shape is a rectangle
-			shape = "square" if ar >= 0.95 and ar <= 1.05 else "rectangle"
+			angles_between_array = np.abs(np.array(angles_between))
+			judgement_rectangle = angles_between_array.std()/angles_between_array.mean() < 0.1
+			if judgement_rectangle:
+				lengths_array = np.array(lengths)
+				judgement_square = lengths_array.std(axis=0)[0]/lengths_array.mean(axis=0)[0] < 0.1
+				if judgement_square:
+					shape = 'square'
+				else:
+					shape = 'rectangle'
+			else:
+				vectors_array = np.array(vectors)
+				angles_array = np.array(angles)
+				if abs(abs(angles_array[0] - angles_array[2]) - 180)  < 5 and abs(abs(angles_array[1] - angles_array[3]) - 180) < 5:
+					lengths_array = np.array(lengths)
+					judgement_diamond = lengths_array.std(axis=0)[0] / lengths_array.mean(axis=0)[0] < 0.1
+					if judgement_diamond:
+						shape = 'diamond'
+					else:
+						shape = 'parallelogram'
+				elif abs(abs(angles_array[0] - angles_array[2]) - 180)  < 5 or abs(abs(angles_array[1] - angles_array[3]) - 180) < 5:
+					shape = 'ladder'
+
+
 			if shape == 'square':
 				absAngles = map(abs, angles)
 				absAngles = list(absAngles)

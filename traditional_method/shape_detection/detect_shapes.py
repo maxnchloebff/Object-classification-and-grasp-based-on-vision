@@ -22,6 +22,7 @@ args = vars(ap.parse_args())
 
 # load the image and resize it to a smaller factor so that
 # the shapes can be approximated better
+image_name = args['image']
 image = cv2.imread(args["image"])
 debug = args['debug']
 resized = imutils.resize(image, width=300)
@@ -38,7 +39,11 @@ if debug == True:
 	cv2.imshow('after_thresh',blurred)
 	cv2.waitKey(0)
 
-thresh = cv2.threshold(blurred, 60, 255, cv2.THRESH_BINARY)[1]
+if image_name == 'shapes_and_colors.png':
+	thresh = cv2.threshold(blurred, 60, 255, cv2.THRESH_BINARY)[1]
+else:
+	thresh = cv2.threshold(blurred, 60, 255, cv2.THRESH_BINARY_INV)[1]
+
 if debug == True:
 	cv2.imshow('after_thresh',thresh)
 	cv2.waitKey(0)
