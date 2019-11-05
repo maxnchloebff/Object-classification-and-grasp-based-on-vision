@@ -121,6 +121,8 @@ class Shape:
                 self.angle_deviation = self.lines_angles[np.argsort(self.lines_angles)[0]]
             elif self.shape_name == 'rectangle' or self.shape_name == 'parallelogram':
                 self.angle_deviation = self.lines_angles[np.argsort(self.lengths)[-1]]
+            # elif self.shape_name == 'ladder':
+
         elif self.num_points == 5:
             self.angle_deviation = self.lines_angles[np.argsort(self.lines_angles)[0]]
         orientation = None
