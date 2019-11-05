@@ -121,9 +121,27 @@ class Shape:
                 self.angle_deviation = self.lines_angles[np.argsort(self.lines_angles)[0]]
             elif self.shape_name == 'rectangle' or self.shape_name == 'parallelogram':
                 self.angle_deviation = self.lines_angles[np.argsort(self.lengths)[-1]]
+
+
+
+                #先保证点到点的向量是 顺时针转的时候 对应的向量
+                    #区分是顺时针转还是逆时针转的方法：
+                        #关于如何判定多边形是顺时针还是逆时针对于凸多边形而言，只需对某一个点计算
+                        #cross product = ((xi - xi-1),(yi - yi-1)) x ((xi+1 - xi),(yi+1 - yi))= (xi - xi-1) * (yi+1 - yi) - (yi - yi-1) * (xi+1 - xi)
+                        #如果上式的值为正，逆时针；为负则是顺时针
+                        #而对于一般的简单多边形，则需对于多边形的每一个点计算上述值，如果正值比较多，是逆时针；负值较多则为顺时针。
+                        #https://blog.csdn.net/yunzaitian163/article/details/6038824
+                    #发现是逆时针之后，怎么变成顺时针：
+                        #如果原来的角A是正数，就变成A-180
+                        #如果原来的角A是负数，就变成A+180
+                #然后在确保是顺时针转的时候做下面的：
+
             elif self.shape_name == 'ladder':
-                pass
-            #TODO:找到梯形的较长的底边向量和这条响亮的对应角度
+                if self.lines_angles[np.argsort(self.lengths)[-1]]>=0:#如果最大的那条边的角度大于等于0
+                    self.angle_deviation = self.lines_angles[np.argsort(self.lengths)[-1]]#逆时针转 最大边对应的角
+                else:#如果最大的那条边的角度小于0
+                    self.angle_deviation = -self.lines_angles[np.argsort(self.lengths)[-1]]#顺时针转 最大边对应的角的相反数
+                    orientation = 'clockwise'
 
 
         elif self.num_points == 5:
