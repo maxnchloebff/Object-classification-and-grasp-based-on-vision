@@ -66,7 +66,10 @@ class Image:
             approx = cv2.approxPolyDP(cnt, 0.04 * peri, True)
             corner_points = [[point[0][0], point[0][1]] for point in approx]
             current_shape = Shape(corner_points)
+            # detect the shape
             shape_nm = current_shape.determine_shape()
+            # detect rotation based on calibration
+            current_shape.determine_rotation()
             self.Shapes.append(current_shape)
             cnt = cnt.astype("float")
             cnt *= self.ratio
@@ -81,27 +84,8 @@ class Image:
             cv2.waitKey(0)
 
 
-def cal_angle(v1, v2):
-    angle1 = math.atan2(v1[1], v1[0])
-    angle1 = int(angle1 * 180 / math.pi)
-    angle2 = math.atan2(v2[1], v2[0])
-    angle2 = int(angle2 * 180 / math.pi)
-    if angle1 * angle2 >= 0:
-        included_angle = abs(angle1 - angle2)
-    else:
-        included_angle = abs(angle1) + abs(angle2)
-        if included_angle > 180:
-            included_angle = 360 - included_angle
-    return included_angle
 
 
-def get_calibration(shape_name, orientation='clockwise'):
-    if shape_name == 'triangle':
-        if orientation == 'clockwise':
-            length_order = [0, 2, 1]
-        else:
-            length_order = [0, 1, 2]
-        return length_order
 
 
 if __name__ == '__main__':
