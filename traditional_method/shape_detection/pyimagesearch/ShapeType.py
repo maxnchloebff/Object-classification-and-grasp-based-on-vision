@@ -47,7 +47,7 @@ class Shape:
             self.central_corner_points[:-1, :], 0, self.central_corner_points[-1, :], axis=0)
         # calculate the cross product then if > 0 it's clockwise,
         # if else then counterclockwise.(Since the coordinate in opencv is different)
-        self.orientation = 'clockwise' if np.cross(self.vectors[0], self.vectors[1]) > 0 else 'counter_clockwise'
+        self.orientation = 'clockwise' if np.cross(self.vectors[0], self.vectors[1]) >  0 else 'counterclockwise'
         # calculate the line angles
         self.lines_angles = []
         for vector in self.vectors:
@@ -102,7 +102,13 @@ class Shape:
         return self.shape_name
 
     def determine_rotation(self):
+        """
+        calculate the according angle the shape need rotating around its mass point in order to turn itself into a calibration
+        the angle is in counterclockwise orientation ias default
+        :return: angle need to rotate in counterclockwise orientation
+        """
         # cali_length_order = get_calibration(self.shape_name,self.orientation)
+        # argsort the lengths array to get the index in order from bottom up
         length_order = np.argsort(self.lengths)
         if self.num_points == 3:
             if self.shape_name == 'triangle':
@@ -117,4 +123,7 @@ class Shape:
                 self.angle_deviation = self.lines_angles[np.argsort(self.lengths)[-1]]
         elif self.num_points == 5:
             self.angle_deviation = self.lines_angles[np.argsort(self.lines_angles)[0]]
+
+        if self.orientation == 'counterclockwise' and self.shape_name != 'circle':
+            self.angle_deviation += 180
         return self.angle_deviation
