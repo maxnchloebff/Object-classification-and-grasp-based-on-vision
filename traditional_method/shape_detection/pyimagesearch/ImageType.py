@@ -34,7 +34,7 @@ class Image:
         if self.debug is True:
             cv2.imshow('after_blurred', blurred)
             cv2.waitKey(0)
-        if image == 'shapes_and_colors.png':
+        if image_name == 'shapes_and_colors.png':
             self.after_thresh = cv2.threshold(blurred, 60, 255, cv2.THRESH_BINARY)[1]
         else:
             self.after_thresh = cv2.threshold(blurred, 60, 255, cv2.THRESH_BINARY_INV)[1]
@@ -77,6 +77,8 @@ class Image:
             image_copy = self.original_image.copy()
             cv2.drawContours(image_copy, [cnt], -1, (0, 255, 0), 2)
             cv2.putText(image_copy, shape_nm, (cx, cy), cv2.FONT_HERSHEY_SIMPLEX,
+                        0.5, (255, 255, 255), 2)
+            cv2.putText(image_copy, str(current_shape.angle_deviation), (cx, cy+20), cv2.FONT_HERSHEY_SIMPLEX,
                         0.5, (255, 255, 255), 2)
 
             # show the output image

@@ -27,15 +27,17 @@ def get_calibration(shape_name, orientation='clockwise'):
             length_order = [2, 0, 1]
         return length_order
 
-    if shape_name == 'rectangle'  or shape_name == 'parallelogram':
+    if shape_name == 'rectangle' or shape_name == 'parallelogram':
         if orientation == 'clockwise':
             length_order = [1, 0]
         else:
             length_order = [0, 1, 2]
+        return  length_order
 class Shape:
 
     def __init__(self, corner_points):
         self.shape_name = None
+        self.angle_deviation = None
         self.num_points = len(corner_points)
         self.corner_points = np.array(corner_points)
         self.mass_point = self.corner_points.mean(axis=0)
@@ -59,7 +61,11 @@ class Shape:
     def determine_shape(self):
 
         if self.num_points == 3:
-            self.shape_name = "triangle"
+            judgement_equal = self.lengths.std() / self.lengths.mean() < 0.1
+            if judgement_equal:
+                self.shape_name = 'equilateral triangle'
+            else:
+                self.shape_name = "triangle"
 
         # if the shape has 4 vertices, it is either a square or
         # a rectangle
@@ -83,7 +89,8 @@ class Shape:
                 elif abs(abs(self.lines_angles[0] - self.lines_angles[2]) - 180) < 5 or abs(
                         abs(self.lines_angles[1] - self.lines_angles[3]) - 180) < 5:
                     self.shape_name = 'ladder'
-
+                else:
+                    self.shape_name = 'common quadrilateral'
         # if the shape is a pentagon, it will have 5 vertices
         elif self.num_points == 5:
             self.shape_name = "pentagon"
@@ -95,5 +102,19 @@ class Shape:
         return self.shape_name
 
     def determine_rotation(self):
-        length_order = get_calibration(self.shape_name,self.orientation)
-        self.lengths.sort()
+        # cali_length_order = get_calibration(self.shape_name,self.orientation)
+        length_order = np.argsort(self.lengths)
+        if self.num_points == 3:
+            if self.shape_name == 'triangle':
+                longest_index = length_order[-1]
+                self.angle_deviation = self.lines_angles[longest_index]
+            else:
+                self.angle_deviation = self.lines_angles[np.argsort(self.lines_angles)[0]]
+        elif self.num_points == 4:
+            if self.shape_name == 'square' or self.shape_name == 'diamond' or self.shape_name == 'common quadrilateral':
+                self.angle_deviation = self.lines_angles[np.argsort(self.lines_angles)[0]]
+            elif self.shape_name == 'rectangle' or self.shape_name == 'parallelogram':
+                self.angle_deviation = self.lines_angles[np.argsort(self.lengths)[-1]]
+        elif self.num_points == 5:
+            self.angle_deviation = self.lines_angles[np.argsort(self.lines_angles)[0]]
+        return self.angle_deviation
