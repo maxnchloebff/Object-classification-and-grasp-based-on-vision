@@ -3,10 +3,19 @@ import cv2
 import math
 from traditional_method.shape_detection.pyimagesearch.ShapeType import Shape
 import imutils
+class ImageNotExistError(ValueError):
+
+    def __init__(self,message='No existing image after threshold!!!!!'):
+        super().__init__(message)
+        self.message = message
 
 
 class Image:
-
+    """
+    Image class should contends a list of Shape class
+    First read an image to convert it into binary image,
+    then detect the shape information from image after threshold
+    """
     def __init__(self, debug):
         self.debug = debug
         self.original_image = None
@@ -46,10 +55,24 @@ class Image:
 
     def reset(self):
         self.original_image = None
+        self.resized = None
+        self.ratio = None
         self.after_thresh = None
         self.Shapes = []
 
     def detect_shapes(self):
+        """
+        detect the basic shapes in current image,then return the status,True for having shapes, False for having no shapes.
+        If there is no contours in the image, then reset the Image class.
+        :return: status(True or False)
+        """
+        # if there is no existing image in the Image class then raise an exception and exit
+        if self.original_image is None:
+            try:
+                raise ImageNotExistError
+            except ImageNotExistError as e:
+                print(e.message)
+                exit(1)
         cnts = cv2.findContours(self.after_thresh.copy(), cv2.RETR_EXTERNAL,
                                 cv2.CHAIN_APPROX_SIMPLE)
 
@@ -58,6 +81,10 @@ class Image:
             cv2.drawContours(self.resized, cnts, -1, (255, 0, 0), thickness=8)
             cv2.imshow('draw_contour', self.resized)
             cv2.waitKey(0)
+        if len(cnts) == 0:
+            self.reset()
+            print('There is no contours in the current image. Try another image!!!!')
+            return False
         for cnt in cnts:
             m = cv2.moments(cnt)
             cx = int((m["m10"] / m["m00"]) * self.ratio)
@@ -84,6 +111,7 @@ class Image:
             # show the output image
             cv2.imshow("Image", image_copy)
             cv2.waitKey(0)
+        return True
 
 
 
@@ -91,6 +119,7 @@ class Image:
 
 
 if __name__ == '__main__':
+
     image = Image(debug=True)
     image.read_image('../ladder.png')
     image.detect_shapes()
