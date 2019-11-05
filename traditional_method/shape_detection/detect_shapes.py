@@ -4,7 +4,7 @@
 import argparse
 
 # import the necessary packages
-from traditional_method.shape_detection.pyimagesearch.shapedetector import Image
+from traditional_method.shape_detection.pyimagesearch.ImageType import Image
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
