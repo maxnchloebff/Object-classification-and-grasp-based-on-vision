@@ -9,9 +9,9 @@ from traditional_method.shape_detection.pyimagesearch.shapedetector import Image
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-i", "--image", required=True,
-	help="path to the input image")
+                help="path to the input image")
 ap.add_argument("-d", "--debug", required=False, default=True,
-	help="whether to set the debug mode(draw some pictures)")
+                help="whether to set the debug mode(draw some pictures)")
 args = vars(ap.parse_args())
 
 # load the image and resize it to a smaller factor so that

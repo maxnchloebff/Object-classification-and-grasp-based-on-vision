@@ -1,27 +1,27 @@
 # import the necessary packages
 import cv2
 import math
-import operator
-import numpy as np
 from traditional_method.shape_detection.pyimagesearch.ShapeType import Shape
 import imutils
 
 
 class Image:
 
-    def __init__(self,debug):
+    def __init__(self, debug):
         self.debug = debug
         self.original_image = None
+        self.resized = None
+        self.ratio = None
         self.after_thresh = None
         self.Shapes = []
 
-    def read_image(self,image):
+    def read_image(self, image_name):
         """
         read an image from source
-        :param image: the original image source
-        :return: the image after threshhold operation
+        :param image_name: the original image source
+        :return: the image after threshold operation
         """
-        self.original_image = cv2.imread(image)
+        self.original_image = cv2.imread(image_name)
         self.resized = imutils.resize(self.original_image, width=300)
         self.ratio = self.original_image.shape[0] / float(self.resized.shape[0])
         # convert the resized image to grayscale, blur it slightly,
@@ -54,30 +54,32 @@ class Image:
                                 cv2.CHAIN_APPROX_SIMPLE)
 
         cnts = imutils.grab_contours(cnts)
-        if self.debug == True:
+        if self.debug is True:
             cv2.drawContours(self.resized, cnts, -1, (255, 0, 0), thickness=8)
             cv2.imshow('draw_contour', self.resized)
             cv2.waitKey(0)
         for cnt in cnts:
-            M = cv2.moments(cnt)
-            cX = int((M["m10"] / M["m00"]) * self.ratio)
-            cY = int((M["m01"] / M["m00"]) * self.ratio)
+            m = cv2.moments(cnt)
+            cx = int((m["m10"] / m["m00"]) * self.ratio)
+            cy = int((m["m01"] / m["m00"]) * self.ratio)
             peri = cv2.arcLength(cnt, True)
             approx = cv2.approxPolyDP(cnt, 0.04 * peri, True)
             corner_points = [[point[0][0], point[0][1]] for point in approx]
-            curren_shape = Shape(corner_points)
-            shape_nm = curren_shape.determin_shape()
+            current_shape = Shape(corner_points)
+            shape_nm = current_shape.determine_shape()
+            self.Shapes.append(current_shape)
             cnt = cnt.astype("float")
             cnt *= self.ratio
             cnt = cnt.astype("int")
             image_copy = self.original_image.copy()
             cv2.drawContours(image_copy, [cnt], -1, (0, 255, 0), 2)
-            cv2.putText(image_copy, shape_nm, (cX, cY), cv2.FONT_HERSHEY_SIMPLEX,
+            cv2.putText(image_copy, shape_nm, (cx, cy), cv2.FONT_HERSHEY_SIMPLEX,
                         0.5, (255, 255, 255), 2)
 
             # show the output image
             cv2.imshow("Image", image_copy)
             cv2.waitKey(0)
+
 
 def cal_angle(v1, v2):
     angle1 = math.atan2(v1[1], v1[0])
