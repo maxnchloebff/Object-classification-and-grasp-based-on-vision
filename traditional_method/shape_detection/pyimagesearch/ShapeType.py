@@ -37,7 +37,7 @@ class Shape():
 
             judgement_rectangle = self.intersection_angles.std() / self.intersection_angles.mean() < 0.1
             if judgement_rectangle:
-                judgement_square = self.lengths.std(axis=0)[0] / self.lengths.mean(axis=0)[0] < 0.1
+                judgement_square = self.lengths.std() / self.lengths.mean() < 0.1
                 if judgement_square:
                     self.shape = 'square'
                 else:
