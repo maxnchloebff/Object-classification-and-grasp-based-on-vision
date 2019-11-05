@@ -123,7 +123,13 @@ class Shape:
                 self.angle_deviation = self.lines_angles[np.argsort(self.lengths)[-1]]
         elif self.num_points == 5:
             self.angle_deviation = self.lines_angles[np.argsort(self.lines_angles)[0]]
-
-        if self.orientation == 'counterclockwise' and self.shape_name != 'circle':
-            self.angle_deviation += 180
-        return self.angle_deviation
+        orientation = None
+        if self.angle_deviation is not None:
+            if self.orientation == 'counterclockwise':
+                self.angle_deviation += 180
+            if self.angle_deviation > 180:
+                self.angle_deviation = 360-self.angle_deviation
+                orientation = 'clockwise'
+            else:
+                orientation = 'counterclockwise'
+        return self.angle_deviation, orientation

@@ -96,7 +96,7 @@ class Image:
             # detect the shape
             shape_nm = current_shape.determine_shape()
             # detect rotation based on calibration
-            current_shape.determine_rotation()
+            angle_deviation, orientation = current_shape.determine_rotation()
             self.Shapes.append(current_shape)
             cnt = cnt.astype("float")
             cnt *= self.ratio
@@ -105,7 +105,7 @@ class Image:
             cv2.drawContours(image_copy, [cnt], -1, (0, 255, 0), 2)
             cv2.putText(image_copy, shape_nm, (cx, cy), cv2.FONT_HERSHEY_SIMPLEX,
                         0.5, (255, 255, 255), 2)
-            cv2.putText(image_copy, str(current_shape.angle_deviation), (cx, cy+20), cv2.FONT_HERSHEY_SIMPLEX,
+            cv2.putText(image_copy, str(angle_deviation) +'  '+ str(orientation), (cx, cy+20), cv2.FONT_HERSHEY_SIMPLEX,
                         0.5, (255, 255, 255), 2)
 
             # show the output image
