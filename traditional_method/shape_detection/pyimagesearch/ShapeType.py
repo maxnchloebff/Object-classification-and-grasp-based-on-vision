@@ -121,7 +121,10 @@ class Shape:
                 self.angle_deviation = self.lines_angles[np.argsort(self.lines_angles)[0]]
             elif self.shape_name == 'rectangle' or self.shape_name == 'parallelogram':
                 self.angle_deviation = self.lines_angles[np.argsort(self.lengths)[-1]]
-            # elif self.shape_name == 'ladder':
+            elif self.shape_name == 'ladder':
+                pass
+            #TODO:找到梯形的较长的底边向量和这条响亮的对应角度
+
 
         elif self.num_points == 5:
             self.angle_deviation = self.lines_angles[np.argsort(self.lines_angles)[0]]

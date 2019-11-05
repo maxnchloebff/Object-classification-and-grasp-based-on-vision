@@ -73,6 +73,7 @@ class Image:
             except ImageNotExistError as e:
                 print(e.message)
                 exit(1)
+        # find the contours in the 'after thresh'
         cnts = cv2.findContours(self.after_thresh.copy(), cv2.RETR_EXTERNAL,
                                 cv2.CHAIN_APPROX_SIMPLE)
 
@@ -81,19 +82,24 @@ class Image:
             cv2.drawContours(self.resized, cnts, -1, (255, 0, 0), thickness=8)
             cv2.imshow('draw_contour', self.resized)
             cv2.waitKey(0)
+        # if no existing contour then return False
         if len(cnts) == 0:
             self.reset()
             print('There is no contours in the current image. Try another image!!!!')
             return False
+        # if exists then>>>>>
         for cnt in cnts:
             m = cv2.moments(cnt)
             cx = int((m["m10"] / m["m00"]) * self.ratio)
             cy = int((m["m01"] / m["m00"]) * self.ratio)
             peri = cv2.arcLength(cnt, True)
+            # approx is the collection of corner points
             approx = cv2.approxPolyDP(cnt, 0.04 * peri, True)
+            #  convert the corner points into the list format
             corner_points = [[point[0][0], point[0][1]] for point in approx]
+            # initialize thew shape class
             current_shape = Shape(corner_points)
-            # detect the shape
+            # detect the shape shape_nm is string(name)
             shape_nm = current_shape.determine_shape()
             # detect rotation based on calibration
             angle_deviation, orientation = current_shape.determine_rotation()
@@ -121,5 +127,7 @@ class Image:
 if __name__ == '__main__':
 
     image = Image(debug=True)
-    image.read_image('../ladder.png')
+
+    image.read_image('../shapes_and_colors.png')
     image.detect_shapes()
+    image.reset()
