@@ -23,8 +23,9 @@ args = vars(ap.parse_args())
 # load the image and resize it to a smaller factor so that
 # the shapes can be approximated better
 image_name = args['image']
-image = cv2.imread(args["image"])
 debug = args['debug']
+image = cv2.imread(args["image"])
+
 resized = imutils.resize(image, width=300)
 ratio = image.shape[0] / float(resized.shape[0])
 
@@ -32,11 +33,11 @@ ratio = image.shape[0] / float(resized.shape[0])
 # and threshold it
 gray = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
 if debug == True:
-	cv2.imshow('after_thresh',gray)
+	cv2.imshow('after_gray',gray)
 	cv2.waitKey(0)
 blurred = cv2.GaussianBlur(gray, (5, 5), 0)
 if debug == True:
-	cv2.imshow('after_thresh',blurred)
+	cv2.imshow('after_blurred',blurred)
 	cv2.waitKey(0)
 
 if image_name == 'shapes_and_colors.png':
