@@ -38,6 +38,8 @@ class Shape:
     def __init__(self, corner_points):
         self.shape_name = None
         self.angle_deviation = None
+        self.line_parel_flag1 = False
+        self.line_parel_flag2 = False
         self.num_points = len(corner_points)
         self.corner_points = np.array(corner_points)
         self.mass_point = self.corner_points.mean(axis=0)
@@ -45,6 +47,8 @@ class Shape:
 
         self.vectors = self.central_corner_points - np.insert(
             self.central_corner_points[:-1, :], 0, self.central_corner_points[-1, :], axis=0)
+        # 关于如何判定多边形是顺时针还是逆时针对于凸多边形而言，只需对某一个点计算
+        # cross product = ((xi - xi-1),(yi - yi-1)) x ((xi+1 - xi),(yi+1 - yi))= (xi - xi-1) * (yi+1 - yi) - (yi - yi-1) * (xi+1 - xi)
         # calculate the cross product then if > 0 it's clockwise,
         # if else then counterclockwise.(Since the coordinate in opencv is different)
         self.orientation = 'clockwise' if np.cross(self.vectors[0], self.vectors[1]) >  0 else 'counterclockwise'
@@ -79,15 +83,17 @@ class Shape:
                 else:
                     self.shape_name = 'rectangle'
             else:
-                if abs(abs(self.lines_angles[0] - self.lines_angles[2]) - 180) < 5 and abs(
-                        abs(self.lines_angles[1] - self.lines_angles[3]) - 180) < 5:
+                if abs(abs(self.lines_angles[0] - self.lines_angles[2]) - 180) < 5:
+                    self.line_parel_flag1 = True
+                if abs(abs(self.lines_angles[1] - self.lines_angles[3]) - 180) < 5:
+                    self.line_parel_flag2 = True
+                if self.line_parel_flag1 and self.line_parel_flag2:
                     judgement_diamond = self.lengths.std() / self.lengths.mean() < 0.1
                     if judgement_diamond:
                         self.shape_name = 'diamond'
                     else:
                         self.shape_name = 'parallelogram'
-                elif abs(abs(self.lines_angles[0] - self.lines_angles[2]) - 180) < 5 or abs(
-                        abs(self.lines_angles[1] - self.lines_angles[3]) - 180) < 5:
+                elif self.line_parel_flag1 or self.line_parel_flag1:
                     self.shape_name = 'ladder'
                 else:
                     self.shape_name = 'common quadrilateral'
@@ -117,31 +123,28 @@ class Shape:
             else:
                 self.angle_deviation = self.lines_angles[np.argsort(self.lines_angles)[0]]
         elif self.num_points == 4:
-            if self.shape_name == 'square' or self.shape_name == 'diamond' or self.shape_name == 'common quadrilateral':
+            if self.shape_name == 'square' or self.shape_name == 'diamond' :
                 self.angle_deviation = self.lines_angles[np.argsort(self.lines_angles)[0]]
-            elif self.shape_name == 'rectangle' or self.shape_name == 'parallelogram':
+            elif self.shape_name == 'rectangle' or self.shape_name == 'parallelogram' or self.shape_name == 'common quadrilateral':
                 self.angle_deviation = self.lines_angles[np.argsort(self.lengths)[-1]]
 
 
-                #因为不知道对应的点的坐标在哪里得到，所以不知道怎么写代码，就用下面的话来表述一下
-                #先保证点到点的向量是 顺时针转的时候 对应的向量
-                    #区分是顺时针转还是逆时针转的方法：
-                        #关于如何判定多边形是顺时针还是逆时针对于凸多边形而言，只需对某一个点计算
-                        #cross product = ((xi - xi-1),(yi - yi-1)) x ((xi+1 - xi),(yi+1 - yi))= (xi - xi-1) * (yi+1 - yi) - (yi - yi-1) * (xi+1 - xi)
-                        #如果上式的值为正，逆时针；为负则是顺时针
-                        #而对于一般的简单多边形，则需对于多边形的每一个点计算上述值，如果正值比较多，是逆时针；负值较多则为顺时针。
-                        #https://blog.csdn.net/yunzaitian163/article/details/6038824
-                    #发现是逆时针之后，怎么变成顺时针：
-                        #如果原来的角A是正数，就变成A-180
-                        #如果原来的角A是负数，就变成A+180
-                #然后在确保是顺时针转的时候做下面的：
-
             elif self.shape_name == 'ladder':
-                if self.lines_angles[np.argsort(self.lengths)[-1]]>=0:#如果最大的那条边的角度大于等于0
-                    self.angle_deviation = self.lines_angles[np.argsort(self.lengths)[-1]]#逆时针转 最大边对应的角
-                else:#如果最大的那条边的角度小于0
-                    self.angle_deviation = -self.lines_angles[np.argsort(self.lengths)[-1]]#顺时针转 最大边对应的角的相反数
-                    orientation = 'clockwise'
+                if self.line_parel_flag1:
+                    line1 = self.lengths[0]
+                    line2 = self.lengths[2]
+                    if line1 > line2:
+                        index = 0
+                    else:
+                        index = 2
+                elif self.line_parel_flag2:
+                    line1 = self.lengths[1]
+                    line2 = self.lengths[3]
+                    if line1 > line2:
+                        index = 1
+                    else:
+                        index = 3
+                self.angle_deviation = self.lines_angles[index]
 
 
         elif self.num_points == 5:
