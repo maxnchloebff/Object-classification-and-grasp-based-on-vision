@@ -4,6 +4,10 @@ import numpy as np
 import imutils
 low_blue = (100,90,90)
 hight_blue = (140,255,255)
+low_red = (160,90,90)
+high_red = (179,90,90)
+low_green = (38,90,90)
+high_green = (75,90,90)
 
 image_name = 'adjoin.png'
 im_orig = cv2.imread(image_name)

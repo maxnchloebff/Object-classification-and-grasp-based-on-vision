@@ -3,6 +3,9 @@ import cv2
 import math
 from traditional_method.shape_detection.pyimagesearch.ShapeType import Shape
 import imutils
+
+
+
 class ImageNotExistError(ValueError):
 
     def __init__(self,message='No existing image after threshold!!!!!'):
@@ -23,6 +26,52 @@ class Image:
         self.ratio = None
         self.after_thresh = None
         self.Shapes = []
+
+    def only_read(self,image_name):
+        self.original_image = cv2.imread(image_name)
+
+    def detect_by_color(self,color):
+        
+        if color == 'blue':
+            low = (100, 90, 90)
+            high= (140, 255, 255)
+        elif color == 'red':
+            low = (160, 90, 90)
+            high = (179, 255, 255)
+        elif color == 'green':
+            low = (38, 90, 90)
+            high = (75, 255, 255)
+        else:
+            print('no such color')
+        im_hsv = cv2.cvtColor(self.original_image, code=cv2.COLOR_BGR2HSV)
+        hsv_channels = cv2.split(im_hsv)
+        cv2.equalizeHist(hsv_channels[2], hsv_channels[2])
+        im_hsv = cv2.merge(hsv_channels)
+        im_hsv_thre = cv2.inRange(im_hsv, low, high)
+        # 去除噪点 开操作
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+        im_hsv = cv2.morphologyEx(im_hsv_thre, cv2.MORPH_OPEN, kernel)
+        # 闭操作（连通区域）
+        im_hsv = cv2.morphologyEx(im_hsv, cv2.MORPH_CLOSE, kernel)
+        cnts = cv2.findContours(im_hsv, cv2.RETR_EXTERNAL,
+                                cv2.CHAIN_APPROX_SIMPLE)
+        cnts = imutils.grab_contours(cnts)
+        if len(cnts) == 0:
+            self.reset()
+            print('There is no contours in the current image. Try another image!!!!')
+            return False
+        for cnt in cnts:
+            m = cv2.moments(cnt)
+            cx = int((m["m10"] / m["m00"]))
+            cy = int((m["m01"] / m["m00"]))
+            peri = cv2.arcLength(cnt, True)
+            # approx is the collection of corner points
+            approx = cv2.approxPolyDP(cnt, 0.04 * peri, True)
+            #  convert the corner points into the list format
+            corner_points = [[point[0][0], point[0][1]] for point in approx]
+            shape_nm, angle_deviation, orientation = self.detect_from_corner_points(corner_points,color)
+            self.draw_cnt_with_name_and_rotation(cnt,shape_nm,cx,cy,angle_deviation,orientation)
+        return True
 
     def read_image(self, image_name):
         """
@@ -59,6 +108,29 @@ class Image:
         self.ratio = None
         self.after_thresh = None
         self.Shapes = []
+
+    def detect_from_corner_points(self,corner_points,color):
+        current_shape = Shape(corner_points, color)
+        # detect the shape shape_nm is string(name)
+        shape_nm = current_shape.determine_shape()
+        # detect rotation based on calibration
+        angle_deviation, orientation = current_shape.determine_rotation()
+        self.Shapes.append(current_shape)
+        return shape_nm, angle_deviation, orientation
+
+    def draw_cnt_with_name_and_rotation(self, cnt, shape_nm, cx, cy, angle_deviation, orientation):
+        cnt = cnt.astype("float")
+        cnt = cnt.astype("int")
+        image_copy = self.original_image.copy()
+        cv2.drawContours(image_copy, [cnt], -1, (0, 255, 0), 2)
+        cv2.putText(image_copy, shape_nm, (cx, cy), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5, (255, 255, 255), 2)
+        cv2.putText(image_copy, str(angle_deviation) + '  ' + str(orientation), (cx, cy + 20),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5, (255, 255, 255), 2)
+        # show the output image
+        cv2.imshow("Image", image_copy)
+        cv2.waitKey(0)
 
     def detect_shapes(self):
         """
@@ -98,25 +170,8 @@ class Image:
             #  convert the corner points into the list format
             corner_points = [[point[0][0], point[0][1]] for point in approx]
             # initialize thew shape class
-            current_shape = Shape(corner_points)
-            # detect the shape shape_nm is string(name)
-            shape_nm = current_shape.determine_shape()
-            # detect rotation based on calibration
-            angle_deviation, orientation = current_shape.determine_rotation()
-            self.Shapes.append(current_shape)
-            cnt = cnt.astype("float")
-            cnt *= self.ratio
-            cnt = cnt.astype("int")
-            image_copy = self.original_image.copy()
-            cv2.drawContours(image_copy, [cnt], -1, (0, 255, 0), 2)
-            cv2.putText(image_copy, shape_nm, (cx, cy), cv2.FONT_HERSHEY_SIMPLEX,
-                        0.5, (255, 255, 255), 2)
-            cv2.putText(image_copy, str(angle_deviation) +'  '+ str(orientation), (cx, cy+20), cv2.FONT_HERSHEY_SIMPLEX,
-                        0.5, (255, 255, 255), 2)
-
-            # show the output image
-            cv2.imshow("Image", image_copy)
-            cv2.waitKey(0)
+            shape_nm, angle_deviation, orientation = self.detect_from_corner_points(corner_points, color=None)
+            self.draw_cnt_with_name_and_rotation(cnt,shape_nm, cx, cy, angle_deviation, orientation)
         return True
 
 

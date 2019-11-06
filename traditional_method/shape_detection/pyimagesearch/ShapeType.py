@@ -43,11 +43,12 @@ def get_calibration(shape_name, orientation='clockwise'):
 
 class Shape:
 
-    def __init__(self, corner_points):
+    def __init__(self, corner_points, color):
         if len(corner_points) <= 2:
             raise NotAShape()
         self.corner_points = corner_points
         self.shape_name = None
+        self.color = color
         self.angle_deviation = None
         self.line_parel_flag1 = False
         self.line_parel_flag2 = False
