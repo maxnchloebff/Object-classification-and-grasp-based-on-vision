@@ -31,7 +31,7 @@ class Image:
         self.original_image = cv2.imread(image_name)
 
     def detect_by_color(self,color):
-        
+
         if color == 'blue':
             low = (100, 90, 90)
             high= (140, 255, 255)

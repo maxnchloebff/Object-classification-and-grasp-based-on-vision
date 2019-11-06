@@ -18,9 +18,12 @@ from traditional_method.shape_detection.pyimagesearch.ImageType import Image
 # the shapes can be approximated better
 # image_name = args['image']
 # debug = args['debug']
-image_name = 'shapes_and_colors.png'
+image_name = 'adjoin.png'
 if __name__ == '__main__':
     image = Image(debug=True)
     image.only_read(image_name)
+    image.detect_by_color(color='red')
+    image.detect_by_color(color='green')
     image.detect_by_color(color='blue')
+    print(len(image.Shapes))
     # image.detect_shapes()
