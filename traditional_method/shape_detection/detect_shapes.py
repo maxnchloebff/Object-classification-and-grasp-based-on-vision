@@ -25,5 +25,12 @@ if __name__ == '__main__':
     image.detect_by_color(color='red')
     image.detect_by_color(color='green')
     image.detect_by_color(color='blue')
-    print(len(image.Shapes))
+    print('当前图片中一共有'+str(len(image.Shapes))+'个形状')
+    print('它们分别是')
+    i = 1
+    for shape in image.Shapes:
+        print('#################################')
+        print(str(i)+'. ',shape.shape_name)
+        print(shape.color)
+        i += 1
     # image.detect_shapes()
