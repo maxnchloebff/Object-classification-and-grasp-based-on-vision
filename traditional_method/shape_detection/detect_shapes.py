@@ -30,7 +30,6 @@ if __name__ == '__main__':
     i = 1
     for shape in image.Shapes:
         print('#################################')
-        print(str(i)+'. ',shape.shape_name)
-        print(shape.color)
+        print(str(i), '. ', shape.color, shape.shape_name)
         i += 1
     # image.detect_shapes()
