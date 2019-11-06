@@ -22,23 +22,30 @@ def get_calibration(shape_name, orientation='clockwise'):
         梯形：第一条边为长底，角度为0度，顺时针转动，或者角度为180，逆时针转动。
     五边形暂时都处理为正五边形
     圆不存在旋转角度
+    每一个标准型的最小边的边长是1！！！！！！！
+    所以要将每一个图型乘以相应倍数才可！！！！！！！！
     :param shape_name: shape‘s name
     :param orientation: clockwise or counterclockwise
     :return: the order of the length
     """
+    catch_point = None
     if shape_name == 'triangle':
         if orientation == 'clockwise':
             length_order = [2, 1, 0]
         else:
             length_order = [2, 0, 1]
-        return length_order
+    if shape_name == 'equilateral triangle':
+        catch_point = np.array([0.25,0.2886751])
 
     if shape_name == 'rectangle' or shape_name == 'parallelogram':
         if orientation == 'clockwise':
             length_order = [1, 0]
         else:
             length_order = [0, 1, 2]
-        return  length_order
+    if shape_name == 'square':
+        catch_point = np.array([0.5,0])
+
+    return catch_point
 
 
 class Shape:
@@ -49,6 +56,7 @@ class Shape:
         self.corner_points = corner_points
         self.shape_name = None
         self.color = color
+        self.catch_point = None
         self.angle_deviation = None
         self.line_parel_flag1 = False
         self.line_parel_flag2 = False
@@ -216,3 +224,18 @@ class Shape:
             else:
                 self.orientation_to_cali = 'counterclockwise'
         return self.angle_deviation, self.orientation_to_cali
+
+    def determine_catch_point(self):
+        catch_point_cali = get_calibration(self.shape_name,self.orientation)
+        if catch_point_cali is None:
+            return None
+        ratio_to_cali = self.lengths[np.argsort(self.lengths)[-1]]/1
+        if self.orientation_to_cali == 'counterclockwise':
+            flag = -1
+        else:
+            flag = 1
+        angle_deviation = flag * self.angle_deviation
+        rotation_matrix = np.array([[np.cos(angle_deviation),np.sin(angle_deviation)],
+                                   [-np.sin(angle_deviation),np.cos(angle_deviation)]])
+        self.catch_point = self.mass_point + ratio_to_cali*rotation_matrix.dot(catch_point_cali)
+        return self.catch_point

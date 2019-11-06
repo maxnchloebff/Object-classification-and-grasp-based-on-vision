@@ -22,9 +22,9 @@ image_name = 'adjoin.png'
 if __name__ == '__main__':
     image = Image(debug=True)
     image.only_read(image_name)
-    image.detect_by_color(color='red')
-    image.detect_by_color(color='green')
-    image.detect_by_color(color='blue')
+    image.detect_by_color(color='red', draw=True)
+    image.detect_by_color(color='green', draw=True)
+    image.detect_by_color(color='blue', draw=True)
     print('当前图片中一共有'+str(len(image.Shapes))+'个形状')
     print('它们分别是')
     i = 1
