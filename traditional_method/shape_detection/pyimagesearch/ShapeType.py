@@ -1,6 +1,12 @@
 import numpy as np
 import math
 
+class NotAShape(Exception):
+
+    def __init__(self,message='Corner_Points list only contains less than 2 points!!!!'):
+        super().__init__(message)
+        self.message = message
+
 
 def get_calibration(shape_name, orientation='clockwise'):
     """
@@ -33,9 +39,13 @@ def get_calibration(shape_name, orientation='clockwise'):
         else:
             length_order = [0, 1, 2]
         return  length_order
+
+
 class Shape:
 
     def __init__(self, corner_points):
+        if len(corner_points) <= 2:
+            raise NotAShape()
         self.corner_points = corner_points
         self.shape_name = None
         self.angle_deviation = None
@@ -89,6 +99,8 @@ class Shape:
 
     def load_shape(self,corner_points):
         # the same as initialization
+        if len(corner_points) <= 2:
+            raise NotAShape()
         self.shape_name = None
         self.angle_deviation = None
         self.line_parel_flag1 = False
