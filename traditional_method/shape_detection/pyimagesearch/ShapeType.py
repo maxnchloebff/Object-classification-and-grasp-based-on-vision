@@ -53,6 +53,7 @@ class Shape:
         # calculate the cross product then if > 0 it's clockwise,
         # if else then counterclockwise.(Since the coordinate in opencv is different)
         self.orientation = 'clockwise' if np.cross(self.vectors[0], self.vectors[1]) >  0 else 'counterclockwise'
+        self.orientation_to_cali = None
         # calculate the line angles
         self.lines_angles = []
         for vector in self.vectors:
@@ -68,7 +69,7 @@ class Shape:
             return False
         else:
             return True
-        
+
     def reset(self):
         self.corner_points = None
         self.shape_name = None
@@ -81,6 +82,7 @@ class Shape:
         self.central_corner_points = None
         self.vectors = None
         self.orientation = None
+        self.orientation_to_cali = None
         self.lines_angles = None
         self.intersection_angles = None
         self.lengths = None
@@ -173,8 +175,6 @@ class Shape:
                 self.angle_deviation = self.lines_angles[np.argsort(self.lines_angles)[0]]
             elif self.shape_name == 'rectangle' or self.shape_name == 'parallelogram' or self.shape_name == 'common quadrilateral':
                 self.angle_deviation = self.lines_angles[np.argsort(self.lengths)[-1]]
-
-
             elif self.shape_name == 'ladder':
                 if self.line_parel_flag1:
                     line1 = self.lengths[0]
@@ -191,17 +191,15 @@ class Shape:
                     else:
                         index = 3
                 self.angle_deviation = self.lines_angles[index]
-
-
         elif self.num_points == 5:
             self.angle_deviation = self.lines_angles[np.argsort(self.lines_angles)[0]]
-        orientation = None
+
         if self.angle_deviation is not None:
             if self.orientation == 'counterclockwise':
                 self.angle_deviation += 180
             if self.angle_deviation > 180:
                 self.angle_deviation = 360-self.angle_deviation
-                orientation = 'clockwise'
+                self.orientation_to_cali = 'clockwise'
             else:
-                orientation = 'counterclockwise'
-        return self.angle_deviation, orientation
+                self.orientation_to_cali = 'counterclockwise'
+        return self.angle_deviation, self.orientation_to_cali
