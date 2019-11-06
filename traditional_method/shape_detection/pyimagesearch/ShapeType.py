@@ -36,6 +36,7 @@ def get_calibration(shape_name, orientation='clockwise'):
 class Shape:
 
     def __init__(self, corner_points):
+        self.corner_points = corner_points
         self.shape_name = None
         self.angle_deviation = None
         self.line_parel_flag1 = False
@@ -61,6 +62,51 @@ class Shape:
         self.intersection_angles = (np.insert(self.lines_angles[:-1], 0, self.lines_angles[-1]) - self.lines_angles) % 360
         self.lengths = np.linalg.norm(self.vectors, axis=1)
 
+    def evaluate_class(self):
+        # indicate the status of the Shape class
+        if self.corner_points is None:
+            return False
+        else:
+            return True
+        
+    def reset(self):
+        self.corner_points = None
+        self.shape_name = None
+        self.angle_deviation = None
+        self.line_parel_flag1 = False
+        self.line_parel_flag2 = False
+        self.num_points = None
+        self.corner_points = None
+        self.mass_point = None
+        self.central_corner_points = None
+        self.vectors = None
+        self.orientation = None
+        self.lines_angles = None
+        self.intersection_angles = None
+        self.lengths = None
+
+    def load_shape(self,corner_points):
+        # the same as initialization
+        self.shape_name = None
+        self.angle_deviation = None
+        self.line_parel_flag1 = False
+        self.line_parel_flag2 = False
+        self.num_points = len(corner_points)
+        self.corner_points = np.array(corner_points)
+        self.mass_point = self.corner_points.mean(axis=0)
+        self.central_corner_points = self.corner_points - np.tile(self.mass_point, (self.num_points, 1))
+
+        self.vectors = self.central_corner_points - np.insert(
+            self.central_corner_points[:-1, :], 0, self.central_corner_points[-1, :], axis=0)
+        self.orientation = 'clockwise' if np.cross(self.vectors[0], self.vectors[1]) > 0 else 'counterclockwise'
+        self.lines_angles = []
+        for vector in self.vectors:
+            angle = int(math.atan2(vector[1], vector[0]) * 180 / math.pi)
+            self.lines_angles.append(angle)
+        self.lines_angles = np.asanyarray(self.lines_angles)
+        self.intersection_angles = (np.insert(self.lines_angles[:-1], 0,
+                                              self.lines_angles[-1]) - self.lines_angles) % 360
+        self.lengths = np.linalg.norm(self.vectors, axis=1)
 
     def determine_shape(self):
 
