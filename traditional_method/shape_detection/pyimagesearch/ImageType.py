@@ -43,10 +43,10 @@ class Image:
         if self.debug is True:
             cv2.imshow('after_blurred', blurred)
             cv2.waitKey(0)
-        if image_name == 'shapes_and_colors.png':
-            self.after_thresh = cv2.threshold(blurred, 60, 255, cv2.THRESH_BINARY)[1]
-        else:
+        if image_name == 'ladder.png':
             self.after_thresh = cv2.threshold(blurred, 60, 255, cv2.THRESH_BINARY_INV)[1]
+        else:
+            self.after_thresh = cv2.threshold(blurred, 60, 255, cv2.THRESH_BINARY)[1]
 
         if self.debug is True:
             cv2.imshow('after_thresh', self.after_thresh)
