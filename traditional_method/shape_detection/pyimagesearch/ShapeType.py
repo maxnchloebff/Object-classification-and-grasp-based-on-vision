@@ -234,8 +234,12 @@ class Shape:
             flag = -1
         else:
             flag = 1
-        angle_deviation = flag * self.angle_deviation
-        rotation_matrix = np.array([[np.cos(angle_deviation),np.sin(angle_deviation)],
-                                   [-np.sin(angle_deviation),np.cos(angle_deviation)]])
+        angle_deviation = (flag * self.angle_deviation)/180*np.pi
+        cos_theta = np.cos(angle_deviation)
+        sin_theta = np.sin(angle_deviation)
+        rotation_matrix = np.array([[cos_theta,sin_theta],
+                                   [-sin_theta,cos_theta]])
         self.catch_point = self.mass_point + ratio_to_cali*rotation_matrix.dot(catch_point_cali)
         return self.catch_point
+
+

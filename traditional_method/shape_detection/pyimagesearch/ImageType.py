@@ -5,12 +5,15 @@ from traditional_method.shape_detection.pyimagesearch.ShapeType import Shape
 import imutils
 
 
-
 class ImageNotExistError(ValueError):
 
-    def __init__(self,message='No existing image after threshold!!!!!'):
+    def __init__(self, message='No existing image after threshold!!!!!'):
         super().__init__(message)
         self.message = message
+
+
+def draw_a_point(img, point: tuple, color: tuple, radius: int):
+    cv2.circle(img, point, radius, color, thickness=-1)
 
 
 class Image:
@@ -19,6 +22,7 @@ class Image:
     First read an image to convert it into binary image,
     then detect the shape information from image after threshold
     """
+
     def __init__(self, debug):
         self.debug = debug
         self.original_image = None
@@ -27,8 +31,9 @@ class Image:
         self.after_thresh = None
         self.Shapes = []
 
-    def only_read(self,image_name):
+    def only_read(self, image_name):
         self.original_image = cv2.imread(image_name)
+
     def read_image(self, image_name):
         """
         read an image from source
@@ -58,11 +63,11 @@ class Image:
             cv2.waitKey(0)
         return self.after_thresh
 
-    def detect_by_color(self,color, draw = False):
+    def detect_by_color(self, color, draw=False):
 
         if color == 'blue':
             low = (100, 90, 90)
-            high= (140, 255, 255)
+            high = (140, 255, 255)
         elif color == 'red':
             low = (160, 90, 90)
             high = (179, 255, 255)
@@ -97,9 +102,13 @@ class Image:
             approx = cv2.approxPolyDP(cnt, 0.04 * peri, True)
             #  convert the corner points into the list format
             corner_points = [[point[0][0], point[0][1]] for point in approx]
-            shape_nm, angle_deviation, orientation, catch_point = self.detect_from_corner_points(corner_points,color)
+            current_shape, shape_nm, angle_deviation, orientation, catch_point = self.detect_from_corner_points(corner_points, color)
             if draw is True:
-                self.draw_cnt_with_name_and_rotation(cnt,shape_nm,cx,cy,angle_deviation,orientation,catch_point)
+                image_copy = self.draw_cnt_with_name_and_rotation(cnt, shape_nm, cx, cy, angle_deviation, orientation, catch_point)
+                # show the output image
+                draw_a_point(image_copy, (int(current_shape.mass_point[0]), int(current_shape.mass_point[1])), color=(255, 0, 0), radius=4)
+                cv2.imshow("Image", image_copy)
+                cv2.waitKey(0)
         return True
 
     def reset(self):
@@ -109,7 +118,7 @@ class Image:
         self.after_thresh = None
         self.Shapes = []
 
-    def detect_from_corner_points(self,corner_points,color):
+    def detect_from_corner_points(self, corner_points, color):
         current_shape = Shape(corner_points, color)
         # detect the shape shape_nm is string(name)
         shape_nm = current_shape.determine_shape()
@@ -117,7 +126,7 @@ class Image:
         angle_deviation, orientation = current_shape.determine_rotation()
         catch_point = current_shape.determine_catch_point()
         self.Shapes.append(current_shape)
-        return shape_nm, angle_deviation, orientation, catch_point
+        return current_shape, shape_nm, angle_deviation, orientation, catch_point
 
     def draw_cnt_with_name_and_rotation(self, cnt, shape_nm, cx, cy, angle_deviation, orientation, catch_point):
         cnt = cnt.astype("float")
@@ -130,10 +139,9 @@ class Image:
                     cv2.FONT_HERSHEY_SIMPLEX,
                     0.5, (255, 255, 255), 2)
         if catch_point is not None:
-            cv2.circle(img=image_copy, center=(int(catch_point[0]), int(catch_point[1])), radius=20, thickness=-1, color=(255, 0, 255))
-        # show the output image
-        cv2.imshow("Image", image_copy)
-        cv2.waitKey(0)
+            cv2.circle(img=image_copy, center=(int(catch_point[0]), int(catch_point[1])), radius=20, thickness=-1,
+                       color=(255, 0, 255))
+        return image_copy
 
     def detect_shapes(self):
         """
@@ -173,18 +181,13 @@ class Image:
             #  convert the corner points into the list format
             corner_points = [[point[0][0], point[0][1]] for point in approx]
             # initialize thew shape class
-            shape_nm, angle_deviation, orientation, catch_point = self.detect_from_corner_points(corner_points, color=None)
-            self.draw_cnt_with_name_and_rotation(cnt,shape_nm, cx, cy, angle_deviation, orientation, catch_point)
+            shape_nm, angle_deviation, orientation, catch_point = self.detect_from_corner_points(corner_points,
+                                                                                                 color=None)
+            self.draw_cnt_with_name_and_rotation(cnt, shape_nm, cx, cy, angle_deviation, orientation, catch_point)
         return True
 
 
-
-
-
-
-
 if __name__ == '__main__':
-
     image = Image(debug=True)
 
     image.read_image('../shapes_and_colors.png')
