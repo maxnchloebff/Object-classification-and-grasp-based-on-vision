@@ -41,8 +41,9 @@ if state == dType.DobotConnect.DobotConnect_NoError:
     dType.SetPTPCmd(api, dType.PTPMode.PTPMOVLXYZMode, 200, 200, 50, 0, isQueued=1)  # 前往目标平台
 
     dType.SetEndEffectorSuctionCup(api, enableCtrl=1, on=0, isQueued=1)  # 气泵吹气， 放下物块
-    lastIndex = dType.SetEndEffectorSuctionCup(api, enableCtrl=0, on=1, isQueued=1)  # 关闭气泵
+    lastIndex = dType.SetEndEffectorSuctionCup(api, enableCtrl=0, on=1, isQueued=1)[0]  # 关闭气泵
 
+    # lastIndex = dType.SetHOMECmd(api, temp=0, isQueued=1)[0]
     # Start to Execute Command Queued
     dType.SetQueuedCmdStartExec(api)
 
