@@ -1,3 +1,8 @@
+"""
+Author: Terence
+单位一般均为毫米
+"""
+
 import DobotDllType as dType
 import numpy as np
 
@@ -35,7 +40,7 @@ class DobotMagician():
         dType.SetQueuedCmdClear(self.api)
         dType.SetPTPJointParams(self.api, 200, 200, 200, 200, 200, 200, 200, 200, isQueued=1)
         self.last_index = dType.SetPTPCommonParams(self.api, 100, 100, isQueued=1)[0]
-        self.execute_cmd_on()
+        self.execute_cmd_then_stop()
         self.clear_queue()
 
     def clear_queue(self):
@@ -50,7 +55,7 @@ class DobotMagician():
         # Async Home
         dType.SetHOMEParams(self.api, *self.w_pos, isQueued=1)
         self.last_index = dType.SetHOMECmd(self.api, temp=0, isQueued=1)[0]
-        self.execute_cmd_on()
+        self.execute_cmd_then_stop()
         self.clear_queue()
 
     def move(self, pos, is_immediate=False):
@@ -60,7 +65,7 @@ class DobotMagician():
         self.last_index = dType.SetPTPCmd(self.api, dType.PTPMode.PTPMOVLXYZMode, *pos, isQueued=1)[0]
 
         if is_immediate:
-            self.execute_cmd_on()
+            self.execute_cmd_then_stop()
             self.clear_queue()
 
     def end_control(self, on, is_immediate=False):
@@ -75,31 +80,51 @@ class DobotMagician():
         self.last_index = dType.SetEndEffectorSuctionCup(self.api, enableCtrl=1, on=on, isQueued=1)[0]
 
         if is_immediate:
-            self.execute_cmd_on()
+            self.execute_cmd_then_stop()
             self.clear_queue()
 
-    def execute_cmd_on(self, is_clear=True):
+    def execute_cmd_then_stop(self, is_clear=True):
         """
         让机械臂执行指令。该指令必须在所有指令均确定了之后再执行。
         """
         dType.SetQueuedCmdStartExec(self.api)
         # Wait for Executing Last Command
-        while self.last_index > dType.GetQueuedCmdCurrentIndex(self.api)[0]:
+        current_index = dType.GetQueuedCmdCurrentIndex(self.api)[0]
+        old_current = 0
+        while self.last_index > current_index:
             dType.dSleep(100)
-            print("sleeping" + ", " + "current: ", dType.GetQueuedCmdCurrentIndex(self.api)[0],
-                  "last: ", self.last_index)
+            if old_current != current_index:
+                print("sleeping" + ", " + "current: ", current_index, "last: ", self.last_index)
+                old_current = current_index
 
-        self.execute_cmd_off(is_clear)
-
-    def execute_cmd_off(self, is_clear=True):
-        """
-        :param is_clear: whether or not clear the cmd queue. If new commands are on the way and old commands should
-        be discarded, is_clear should be set to True.
-        """
-        # Stop to Execute Command Queued
         dType.SetQueuedCmdStopExec(self.api)
         if is_clear:
             self.clear_queue()
+        
+    def wait(self, time, is_immediate=False):
+        """
+        机械臂等待状态指令，将存续time时间。根据官方API，这个指令只能是队列指令，无法成为立即指令。
+        :param time: sleeping time of Dobot (not the pc program)
+        :param is_immediate: 是否立即执行（利用队列清空立即执行）
+        """
+        if is_immediate:
+            self.clear_queue()
+        
+        dType.SetWAITCmd(self.api, waitTime=time, isQueued=1)
+        
+        if is_immediate:
+            self.execute_cmd_then_stop()
+            self.clear_queue()
+
+    def get_pos(self):
+        """
+        :return: pp: x, y, z, r
+                 jp: 4个关节轴的角度
+        """
+        pose = dType.GetPose(self.api)
+        pp = np.array(pose[:4])
+        jp = np.array(pose[4:])
+        return pp, jp
 
 
 if __name__ == "__main__":
