@@ -1,5 +1,6 @@
 from myapi import DobotMagician
 import numpy as np
+import DobotDllType as dType
 
 """Global Variables"""
 
@@ -24,14 +25,17 @@ if __name__ == "__main__":
     """
     while True:  # "True" can be replaced by a condition: whether or not to continue
         # Robot and Vision module reset:
-        dobot.move(dobot.w_pos, is_immediate=True)  # wait in the waiting position
+        # dobot.move(dobot.w_pos, is_immediate=True)  # wait in the waiting position
 
         """vision: detect the pos of the object"""
         # obj_pos = vision.detect()
+        obj_pos = np.array([200, 50, 50, 50])
         """robot: go the the pos"""
         dobot.move(obj_pos)
+        dobot.move(obj_pos-[0, 0, 30, 0])
         dobot.end_control(on=True)  # grab the object
         dobot.execute_cmd_on()
+        # dType.dSleep(5000)
 
         """robot: move to the destination platform and release the object"""
         dobot.move(dobot.des_pos)

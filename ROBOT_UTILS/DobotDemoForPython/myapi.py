@@ -57,8 +57,7 @@ class DobotMagician():
         if is_immediate:
             self.clear_queue()
 
-        self.last_index = dType.SetPTPCmd(self.api, dType.PTPMode.PTPMOVLXYZMode, pos[0], pos[1], pos[2], pos[3],
-                                          isQueued=1)[0]
+        self.last_index = dType.SetPTPCmd(self.api, dType.PTPMode.PTPMOVLXYZMode, *pos, isQueued=1)[0]
 
         if is_immediate:
             self.execute_cmd_on()
@@ -87,9 +86,10 @@ class DobotMagician():
         # Wait for Executing Last Command
         while self.last_index > dType.GetQueuedCmdCurrentIndex(self.api)[0]:
             dType.dSleep(100)
+            print("sleeping" + ", " + "current: ", dType.GetQueuedCmdCurrentIndex(self.api)[0],
+                  "last: ", self.last_index)
 
-        if is_clear:
-            self.clear_queue()
+        self.execute_cmd_off(is_clear)
 
     def execute_cmd_off(self, is_clear=True):
         """
