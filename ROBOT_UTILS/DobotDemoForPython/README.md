@@ -68,10 +68,39 @@ Please try to add "vision module" python scripts inside *my_control.py* file, be
 
 **Note:** methods in `DobotMagician`, such as `initialize`, `set_home` and `move` involve commands which are firstly stored inside a queue. Only after method `execute_cmd` is executed, the commands in queue will be executed by the arm in order.
 
+**Note:** 
 
+```python
+while self.last_index > dType.GetQueuedCmdCurrentIndex(self.api)[0]:
+	dType.dSleep(100)
+```
 
-# Problems
+The python script here means let the program to wait until Dobot has finished current command. Here, `last_index` means the index of the last command in queue. To achieve the last index, I use the following script
+
+```python
+self.last_index = dType.SetEndEffectorSuctionCup(self.api, enableCtrl=1, on=on, isQueued=1)[0]
+```
+
+Here the value of `last_index` is equal to the return value of `dType.GetQueuedCmdCurrentIndex(self.api)[0]` **after the last command is executed.**
+
+# 3. Puzzles
 
 There exist problems when it comes to my understanding of the Dobot Magician robot arm:
 
-- [ ] What is the python grammar pattern when I need to set `isQueued = 0`? In other words, how do the robot arm respond when it receives a command which is not in the queue? I've made a test in the lab, but the command wasn't executed. **(My temporary resolution, however, exists - the queue will be cleared, added by one command, and executed consecutively. This, I think, may reduce the efficiency*)**
+- [ ] What is the python grammar pattern when I need to set `isQueued = 0`? In other words, how do the robot arm respond when it receives a command which is not in the queue? I've made a test in the lab, but the command wasn't executed. **(My temporary resolution, however, exists - the queue will be cleared, added by one command, and executed consecutively. This, I think, may reduce the efficiency)**
+
+
+
+# 4. Possible Future Improvement
+
+- [ ] **dual thread program**. One is named the vision or main module to possess the vision info, and the other communicates with the main thread to control the robots, and at the mean time synchronize with the real dobot arm.
+
+
+
+# 5. Recent Progress
+
+## 2019/11/28
+
+- **fatal bug fix:** I didn't add a `dType.SetQueuedCmdStopExec` command after executing the first few commands, which will cause the fact that instantly I send one command to the queue (without start command) the robot will try to execute it and contradicts my expectation. This, may caused chaos inside the robot. After a morning's attempt and with the help of [@maxnchloebff]( https://github.com/maxnchloebff ), I finally realized the problem.
+- **some modifications for the convenience of debugging:** As the DLLs doesn't support debugging using python module, I try to add some `print` commands to help me locate where the bug exists.
+- Some other utilities.
