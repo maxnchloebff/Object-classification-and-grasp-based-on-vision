@@ -14,7 +14,7 @@ CON_STR = {
 
 
 class DobotMagician():
-    def __init__(self, waiting_pos=np.array([250, 0, 50, 0]), destination_pos=np.array([0, 200, 50, 0])):
+    def __init__(self, waiting_pos=np.array([250, 0, 50, 0]), destination_pos=np.array([200, -100, 50, 0])):
         self.api = None
         self.w_pos = waiting_pos
         self.des_pos = destination_pos
@@ -99,21 +99,24 @@ class DobotMagician():
             if old_current != current_index:
                 print("sleeping" + ", " + "current: ", current_index, "last: ", self.last_index)
                 old_current = current_index
+            current_index = dType.GetQueuedCmdCurrentIndex(self.api)[0]
 
         dType.SetQueuedCmdStopExec(self.api)
         if is_clear:
             self.clear_queue()
+
+        print("'execute_cmd_then_stop' returned with index", dType.GetQueuedCmdCurrentIndex(self.api)[0])
         
     def wait(self, time, is_immediate=False):
         """
         机械臂等待状态指令，将存续time时间。根据官方API，这个指令只能是队列指令，无法成为立即指令。
-        :param time: sleeping time of Dobot (not the pc program)
+        :param time: sleeping time of Dobot (not the pc program) 单位：秒。
         :param is_immediate: 是否立即执行（利用队列清空立即执行）
         """
         if is_immediate:
             self.clear_queue()
         
-        dType.SetWAITCmd(self.api, waitTime=time, isQueued=1)
+        self.last_index = dType.SetWAITCmd(self.api, waitTime=time, isQueued=1)[0]
         
         if is_immediate:
             self.execute_cmd_then_stop()
