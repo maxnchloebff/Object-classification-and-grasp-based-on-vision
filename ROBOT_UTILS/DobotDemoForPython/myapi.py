@@ -20,6 +20,9 @@ class DobotMagician():
         self.des_pos = destination_pos
         self.last_index = None
 
+    def disconnect(self):
+        dType.DisconnectDobot(self.api)
+
     def initialize(self):
         """
         This function initializes the robot, which includes connection and loading required dll on this computer.

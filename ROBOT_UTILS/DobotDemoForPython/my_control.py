@@ -10,7 +10,8 @@ if __name__ == "__main__":
     dobot.set_home()  # self-examine to restore precision
     print("Finished setting home. Preparing to execute working session commands...")
 
-    while True:  # "True" can be replaced by a condition: whether or not to continue
+    count = 0
+    while count < 10:
         # Robot and Vision module reset:
         dobot.move(dobot.w_pos, is_immediate=True)  # wait in the waiting position
 
@@ -28,6 +29,10 @@ if __name__ == "__main__":
         dobot.end_control(on=False)
         dobot.execute_cmd_then_stop()
 
-        """vision: check whether there is remaining blocks"""
+        # vision: check whether there is remaining blocks"""
         # vision.detect_remaining()
 
+        count += 1
+
+    # disconnect dobot:
+    dobot.disconnect()
