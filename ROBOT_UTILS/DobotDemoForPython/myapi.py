@@ -13,7 +13,7 @@ CON_STR = {
         dType.DobotConnect.DobotConnect_Occupied: "DobotConnect_Occupied"}
 
 
-class DobotMagician():
+class DobotMagician:
     def __init__(self, waiting_pos=np.array([250, 0, 50, 0]), destination_pos=np.array([200, -100, 50, 0])):
         self.api = None
         self.w_pos = waiting_pos
@@ -131,6 +131,37 @@ class DobotMagician():
         pp = np.array(pose[:4])
         jp = np.array(pose[4:])
         return pp, jp
+
+    def set_mode_digital_output(self, pin=16, is_immediate=False):
+        """
+        :param pin: 默认的引脚为12
+        :param is_immediate:
+        :return:
+        """
+        if is_immediate:
+            self.clear_queue()
+
+        self.last_index = dType.SetIOMultiplexing(self.api, pin, dType.GPIOType.GPIOTypeDO, isQueued=1)
+
+        if is_immediate:
+            self.execute_cmd_then_stop()
+            self.clear_queue()
+
+    def set_digital_output(self, pin, level, is_immediate=False):
+        """
+        :param pin:
+        :param level: [bool] 高低电平。
+        :param is_immediate:
+        :return:
+        """
+        if is_immediate:
+            self.clear_queue()
+
+        self.last_index = dType.SetIODO(self.api, pin, level, isQueued=1)
+
+        if is_immediate:
+            self.execute_cmd_then_stop()
+            self.clear_queue()
 
 
 if __name__ == "__main__":

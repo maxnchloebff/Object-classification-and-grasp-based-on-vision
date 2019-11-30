@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
 
 
-Please try to add "vision module" python scripts inside *my_control.py* file, because this file is considered to be the "main" and the entry of the whole program.
+Please try to add "vision module" python scripts inside *main.py* file, because this file is considered to be the "main" and the entry of the whole program.
 
 **Note:** methods in `DobotMagician`, such as `initialize`, `set_home` and `move` involve commands which are firstly stored inside a queue. Only after method `execute_cmd` is executed, the commands in queue will be executed by the arm in order.
 
@@ -75,13 +75,25 @@ while self.last_index > dType.GetQueuedCmdCurrentIndex(self.api)[0]:
 	dType.dSleep(100)
 ```
 
-The python script here means let the program to wait until Dobot has finished current command. Here, `last_index` means the index of the last command in queue. To achieve the last index, I use the following script
+The python script here let the program to wait until Dobot has finished current command. Here, `last_index` means the index of the last command in queue. To achieve the last index, I use the following script
 
 ```python
 self.last_index = dType.SetEndEffectorSuctionCup(self.api, enableCtrl=1, on=on, isQueued=1)[0]
 ```
 
 Here the value of `last_index` is equal to the return value of `dType.GetQueuedCmdCurrentIndex(self.api)[0]` **after the last command is executed.**
+
+## IO Multiplexing
+
+At last we decided to use electromagnet to grab the blocks, as the pump set can only grab an object at least one surface of which is parallel to the platform.  This, however, contradicts our working conditions.
+
+Totally there are 20 pins available for multiplexing. After exploring, I chose pin 16. The table below shows the properties of pin 16 according to the official user guide:
+
+| I/O address | Voltage | Digital Output | PWM  | Digital Input | ADC  |
+| :---------: | :-----: | :------------: | :--: | :-----------: | :--: |
+|     16      |   12V   |       √        |  -   |       -       |  -   |
+
+And the methods controlling this pin are now encapsulated to *myapi.py*. 
 
 # 3. Puzzles
 
@@ -91,16 +103,21 @@ There exist problems when it comes to my understanding of the Dobot Magician rob
 
 
 
-# 4. Possible Future Improvement
+# 4. (Possible) Future Plans
 
 - [ ] **dual thread program**. One is named the vision or main module to possess the vision info, and the other communicates with the main thread to control the robots, and at the mean time synchronize with the real dobot arm.
+- [ ] attach the electromagnet to the Dobot arm.
 
 
 
 # 5. Recent Progress
 
-## 2019/11/28
+## 2019/11/28 and 2019/11/29
 
 - **fatal bug fix:** I didn't add a `dType.SetQueuedCmdStopExec` command after executing the first few commands, which will cause the fact that instantly I send one command to the queue (without start command) the robot will try to execute it and contradicts my expectation. This, may caused chaos inside the robot. After a morning's attempt and with the help of [@maxnchloebff]( https://github.com/maxnchloebff ), I finally realized the problem.
 - **some modifications for the convenience of debugging:** As the DLLs doesn't support debugging using python module, I try to add some `print` commands to help me locate where the bug exists.
 - Some other utilities.
+
+## 2019/11/30
+
+New function: IO Multiplexing. The related methods are added to the `DobotMagician` class. **Awaiting to be tested in the lab**.
