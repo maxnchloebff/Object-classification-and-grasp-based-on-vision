@@ -141,7 +141,7 @@ class DobotMagician:
         if is_immediate:
             self.clear_queue()
 
-        self.last_index = dType.SetIOMultiplexing(self.api, pin, dType.GPIOType.GPIOTypeDO, isQueued=1)
+        self.last_index = dType.SetIOMultiplexing(self.api, pin, dType.GPIOType.GPIOTypeDO, isQueued=1)[0]
 
         if is_immediate:
             self.execute_cmd_then_stop()
@@ -157,7 +157,7 @@ class DobotMagician:
         if is_immediate:
             self.clear_queue()
 
-        self.last_index = dType.SetIODO(self.api, pin, level, isQueued=1)
+        self.last_index = dType.SetIODO(self.api, pin, level, isQueued=1)[0]
 
         if is_immediate:
             self.execute_cmd_then_stop()

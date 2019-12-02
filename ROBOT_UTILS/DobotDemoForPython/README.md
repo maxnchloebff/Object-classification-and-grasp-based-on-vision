@@ -4,7 +4,7 @@ This python module is for the control of a robot arm, which mainly contains part
 
 The application target of this python module is the Dobot Magician robot arm manufactured by Dobot company. Based on the DLLs (Dynamic Link Libs) on the official site [Dobot Demo V2.0](https://cn.dobot.cc/downloadcenter/dobot-magician.html?sub_cat=72#sub-download) I've made some enhancement for the convenience of our project:
 
-1. encapsulated the original module into an *myapi.py* file which consists of a class named `DobotMagician`.
+1. encapsulated the original module into san *myapi.py* file which consists of a class named `DobotMagician`.
 2. set the framework for the python main thread (**Temporarily I think one thread will be enough, because there is no obvious requirements of small time delay**).
 
 
@@ -93,19 +93,21 @@ Totally there are 20 pins available for multiplexing. After exploring, I chose p
 | :---------: | :-----: | :------------: | :--: | :-----------: | :--: |
 |     16      |   12V   |       √        |  -   |       -       |  -   |
 
-And the methods controlling this pin are now encapsulated to *myapi.py*. 
+And the methods controlling this pin are now encapsulated to *myapi.py*, which has been roughly tested in the lab (A multimeter showed that the voltage between the 16th pin and GND can switch from 0V to 12V).
 
 # 3. Puzzles
 
 There exist problems when it comes to my understanding of the Dobot Magician robot arm:
 
-- [ ] What is the python grammar pattern when I need to set `isQueued = 0`? In other words, how do the robot arm respond when it receives a command which is not in the queue? I've made a test in the lab, but the command wasn't executed. **(My temporary resolution, however, exists - the queue will be cleared, added by one command, and executed consecutively. This, I think, may reduce the efficiency)**
+- [x] What is the python grammar pattern when I need to set `isQueued = 0`?
+
+  My temporary understanding (according to my experiments) is that it must be executed when the Dobot is executing the command in the queue. In other words, it must be between the command `dType.SetQueuedCmdStartExec(api)` and command `dType.SetQueuedCmdStopExec(api)`. Otherwise it cannot be executed and Dobot will ignore this  command (or just save it?)
 
 
 
 # 4. (Possible) Future Plans
 
-- [ ] **dual thread program**. One is named the vision or main module to possess the vision info, and the other communicates with the main thread to control the robots, and at the mean time synchronize with the real dobot arm.
+- [ ] **dual thread program**. One is named the vision or main module to possess the vision info, and the other communicates with the main thread to control the robots, and at the mean time synchronize with the real Dobot arm.
 - [ ] attach the electromagnet to the Dobot arm.
 
 
@@ -121,3 +123,7 @@ There exist problems when it comes to my understanding of the Dobot Magician rob
 ## 2019/11/30
 
 New function: IO Multiplexing. The related methods are added to the `DobotMagician` class. **Awaiting to be tested in the lab**.
+
+## 2019/12/2
+
+I tested the IO multiplexing code, and it has been proven that this is applicable.
