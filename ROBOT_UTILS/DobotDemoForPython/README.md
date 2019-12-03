@@ -11,9 +11,13 @@ The application target of this python module is the Dobot Magician robot arm man
 
 # 2. Usage
 
+
+
+## 2.1 Encapsulation
+
 See *myapi.py* for how to use it.
 
-## 2.1 Logic of Program
+## 2.2 Logic of Program
 
 See the semi-pseudo python code below for the logic of the program.
 
@@ -83,7 +87,7 @@ self.last_index = dType.SetEndEffectorSuctionCup(self.api, enableCtrl=1, on=on, 
 
 Here the value of `last_index` is equal to the return value of `dType.GetQueuedCmdCurrentIndex(self.api)[0]` **after the last command is executed.**
 
-## IO Multiplexing
+## 2.3 IO Multiplexing
 
 At last we decided to use electromagnet to grab the blocks, as the pump set can only grab an object at least one surface of which is parallel to the platform.  This, however, contradicts our working conditions.
 
