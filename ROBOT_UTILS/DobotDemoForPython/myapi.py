@@ -73,8 +73,13 @@ class DobotMagician:
         self.clear_queue()
 
     def wait_for_command_execution(self, is_immediate):
-        while dType.GetQueuedCmdCurrentIndex(self.api)[0] > self.last_index:
-            time.sleep(0.2)
+        """
+        立即指令需要等，如果是队列指令则不需要等，将会在队列指令开始执行的时候统一等。
+        """
+        if is_immediate:
+            # print("inside if")
+            while dType.GetQueuedCmdCurrentIndex(self.api)[0] > self.last_index:
+                time.sleep(0.2)
 
     def move(self, pos, mode=1, is_immediate=False):
         self.last_index = dType.SetPTPCmd(self.api, mode, *pos, isQueued=not is_immediate)[0]
@@ -134,7 +139,7 @@ class DobotMagician:
         while self.last_index > current_index:
             dType.dSleep(100)
             if old_current != current_index:
-                print("sleeping" + ", " + "current: ", current_index, "last: ", self.last_index)
+                # print("sleeping" + ", " + "current: ", current_index, "last: ", self.last_index)
                 old_current = current_index
             current_index = dType.GetQueuedCmdCurrentIndex(self.api)[0]
 
@@ -142,7 +147,7 @@ class DobotMagician:
         if is_clear:
             self.clear_queue()
 
-        print("'execute_cmd_then_stop' returned with index", dType.GetQueuedCmdCurrentIndex(self.api)[0])
+        # print("'execute_cmd_then_stop' returned with index", dType.GetQueuedCmdCurrentIndex(self.api)[0])
 
     def start_execute_cmd(self):
         dType.SetQueuedCmdStartExec(self.api)
@@ -192,9 +197,12 @@ class DobotMagician:
 if __name__ == "__main__":
     dobot = DobotMagician()
     dobot.initialize()
-
+    dobot.set_home()
+    print(dobot.get_pos())
     dobot.start_execute_cmd()
-    dobot.move(np.array([0, 200, 100, 90]), mode=dobot.move_mode["MOVJ"])
+    dobot.move(np.array([0, 200, 100, 0]), mode=dobot.move_mode["MOVJ_XYZ"], is_immediate=True)
+    time.sleep(2)
+    print(dobot.get_pos())
     # dobot.set_home()
     # dobot.start_execute_cmd()
     # temp_pos = dobot.get_pos()[1]

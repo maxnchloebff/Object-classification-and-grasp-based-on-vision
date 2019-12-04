@@ -69,11 +69,21 @@ if __name__ == "__main__":
     print("-------------------")
     print("示教运动")
     print("-------------------")
+    np.save("image_to_arm.npy", image_to_arm)
     old_camPt = np.array([-1, -1, -1])
     while True:
         # 让机械臂移动到鼠标点击的点的位置
-        if (ra.camPt-np.array([-2, -2, -2])).any and (ra.camPt-old_camPt).any():
-            arm_pos = image_to_arm @ np.array(ra.camPt)
+        if (ra.camPt-np.array([-2, -2, -2])).any() and (ra.camPt-old_camPt).any():
+            print("Mouse clicked")
+            print("ra.camPt", ra.camPt, "\nold_camPt", old_camPt)
+            arm_pos = image_to_arm @ np.append(np.array(ra.camPt), 1)
+            arm_pos[3] = 0
+            print("arm_pos", arm_pos)
+            arm_pos[2] += 50
             dobot.start_execute_cmd()
-            dobot.move(arm_pos, is_immediate=True)
+            dobot.move(arm_pos, mode=1, is_immediate=True)
+            time.sleep(2)
+            dobot.move(np.array([0, 0, -30, 0]), mode=7, is_immediate=True)
+            time.sleep(1)
+            dobot.move(np.array([0, 0, 50, 0]), mode=7, is_immediate=True)
             old_camPt = ra.camPt
