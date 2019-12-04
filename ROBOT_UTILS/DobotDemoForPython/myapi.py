@@ -5,6 +5,7 @@ Author: Terence
 
 import DobotDllType as dType
 import numpy as np
+import time
 
 
 CON_STR = {
@@ -19,6 +20,16 @@ class DobotMagician:
         self.w_pos = waiting_pos
         self.des_pos = destination_pos
         self.last_index = None
+        self.move_mode = {"JUMP_XYZ": 0,
+                          "MOVJ_XYZ": 1,
+                          "MOVL_XYZ": 2,
+                          "JUMP_ANGLE": 3,
+                          "MOVJ_ANGLE": 4,
+                          "MOVL_ANGLE": 5,
+                          "MOVJ_ANGLEINC": 6,
+                          "MOVL_XYZINC": 7,
+                          "MOVJ_XYZINC": 8,
+                          "JUMP_MOVLXYZ": 9}
 
     def disconnect(self):
         dType.DisconnectDobot(self.api)
@@ -61,15 +72,44 @@ class DobotMagician:
         self.execute_cmd_then_stop()
         self.clear_queue()
 
-    def move(self, pos, is_immediate=False):
-        if is_immediate:
-            self.clear_queue()
+    def wait_for_command_execution(self, is_immediate):
+        while dType.GetQueuedCmdCurrentIndex(self.api)[0] > self.last_index:
+            time.sleep(0.2)
 
-        self.last_index = dType.SetPTPCmd(self.api, dType.PTPMode.PTPMOVLXYZMode, *pos, isQueued=1)[0]
+    def move(self, pos, mode=1, is_immediate=False):
+        self.last_index = dType.SetPTPCmd(self.api, mode, *pos, isQueued=not is_immediate)[0]
+        self.wait_for_command_execution(is_immediate=is_immediate)
 
-        if is_immediate:
-            self.execute_cmd_then_stop()
-            self.clear_queue()
+    # def move(self, pos, mode=1, is_immediate=False):
+    #     if is_immediate:
+    #         self.clear_queue()
+    #         self.last_index = dType.SetPTPCmd(self.api, mode, *pos, isQueued=0)[0]
+    #         while dType.GetQueuedCmdCurrentIndex(self.api)[0] > self.last_index:
+    #             print("waiting")
+    #             time.sleep(0.2)
+    #     else:
+    #         self.last_index = dType.SetPTPCmd(self.api, dType.PTPMode.PTPMOVLXYZMode, *pos, isQueued=1)[0]
+
+    def jog(self, is_joint, mode, dest_pos):
+        """
+        enum {
+            IDLE, //空闲状态
+            AP_DOWN, //X+/Joint1+
+            AN_DOWN, //X-/Joint1-
+            BP_DOWN, //Y+/Joint2+
+            BN_DOWN, //Y-/Joint2-
+            CP_DOWN, //Z+/Joint3+
+            CN_DOWN, //Z-/Joint3-
+            DP_DOWN, //R+/Joint4+
+            DN_DOWN, //R-/Joint4-
+            LP_DOWN, //L+。仅在isJoint=1 时，LP_DOWN 可用
+            LN_DOWN //L-。仅在isJoint=1 时，LN_DOWN 可用
+            };
+        :param is_joint: 是否是关节
+        :param cmd: 从enum中选一个
+        :param is_immediate: 是否立即执行
+        """
+        self.last_index = dType.SetJOGCmd(self.api, isJoint=is_joint, cmd=mode, isQueued=0)[0]
 
     def end_control(self, on, is_immediate=False):
         """
@@ -77,14 +117,11 @@ class DobotMagician:
         :param on: [bool]. True: Suck. False: Loose
         :param is_immediate: [bool]. whether or not to execute instantly the command is sent.
         """
-        if is_immediate:
-            self.clear_queue()
+        self.last_index = dType.SetEndEffectorSuctionCup(self.api, enableCtrl=1, on=on, isQueued=not is_immediate)[0]
+        self.wait_for_command_execution(is_immediate)
 
-        self.last_index = dType.SetEndEffectorSuctionCup(self.api, enableCtrl=1, on=on, isQueued=1)[0]
-
-        if is_immediate:
-            self.execute_cmd_then_stop()
-            self.clear_queue()
+    def get_current_index(self):
+        return dType.GetQueuedCmdCurrentIndex(self.api)[0]
 
     def execute_cmd_then_stop(self, is_clear=True):
         """
@@ -106,6 +143,12 @@ class DobotMagician:
             self.clear_queue()
 
         print("'execute_cmd_then_stop' returned with index", dType.GetQueuedCmdCurrentIndex(self.api)[0])
+
+    def start_execute_cmd(self):
+        dType.SetQueuedCmdStartExec(self.api)
+
+    def end_execute_cmd(self):
+        dType.SetQueuedCmdStopExec(self.api)
         
     def wait(self, time, is_immediate=False):
         """
@@ -113,14 +156,8 @@ class DobotMagician:
         :param time: sleeping time of Dobot (not the pc program) 单位：秒。
         :param is_immediate: 是否立即执行（利用队列清空立即执行）
         """
-        if is_immediate:
-            self.clear_queue()
-        
-        self.last_index = dType.SetWAITCmd(self.api, waitTime=time, isQueued=1)[0]
-        
-        if is_immediate:
-            self.execute_cmd_then_stop()
-            self.clear_queue()
+        self.last_index = dType.SetWAITCmd(self.api, waitTime=time, isQueued=not is_immediate)[0]
+        self.wait_for_command_execution(is_immediate)
 
     def get_pos(self):
         """
@@ -138,14 +175,8 @@ class DobotMagician:
         :param is_immediate:
         :return:
         """
-        if is_immediate:
-            self.clear_queue()
-
-        self.last_index = dType.SetIOMultiplexing(self.api, pin, dType.GPIOType.GPIOTypeDO, isQueued=1)[0]
-
-        if is_immediate:
-            self.execute_cmd_then_stop()
-            self.clear_queue()
+        self.last_index = dType.SetIOMultiplexing(self.api, pin, dType.GPIOType.GPIOTypeDO, isQueued=not is_immediate)[0]
+        self.wait_for_command_execution(is_immediate)
 
     def set_digital_output(self, pin, level, is_immediate=False):
         """
@@ -154,17 +185,23 @@ class DobotMagician:
         :param is_immediate:
         :return:
         """
-        if is_immediate:
-            self.clear_queue()
-
-        self.last_index = dType.SetIODO(self.api, pin, level, isQueued=1)[0]
-
-        if is_immediate:
-            self.execute_cmd_then_stop()
-            self.clear_queue()
+        self.last_index = dType.SetIODO(self.api, pin, level, isQueued=not is_immediate)[0]
+        self.wait_for_command_execution(is_immediate)
 
 
 if __name__ == "__main__":
     dobot = DobotMagician()
     dobot.initialize()
-    dobot.set_home()
+
+    dobot.start_execute_cmd()
+    dobot.move(np.array([0, 200, 100, 90]), mode=dobot.move_mode["MOVJ"])
+    # dobot.set_home()
+    # dobot.start_execute_cmd()
+    # temp_pos = dobot.get_pos()[1]
+    # dest_pos = np.append(temp_pos[:3], 90)
+    # dobot.jog(is_joint=True, mode=7, dest_pos=dest_pos)
+    #
+    # dobot.start_execute_cmd()
+    # dobot.move(dobot.w_pos, is_immediate=True)
+
+    dobot.disconnect()

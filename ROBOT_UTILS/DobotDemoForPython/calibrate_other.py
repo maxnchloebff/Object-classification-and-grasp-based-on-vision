@@ -5,7 +5,7 @@
 
 import threading
 import time
-import rsAruco_other as ra
+import rsAruco as ra
 import cv2
 # from PIL import Image
 
@@ -88,7 +88,7 @@ if __name__ == "__main__":
 
     image_to_arm = np.dot(arm_cord, np.linalg.pinv(centers))
     arm_to_image = np.linalg.pinv(image_to_arm)
-    dType.SetPTPCmd(api, 1, 217,0,154,0, isQueued=0)
+    dType.SetPTPCmd(api, 1, 217, 0, 154, 0, isQueued=0)
     dType.SetQueuedCmdStopExec(api)
 
     print("Finished")
@@ -111,3 +111,8 @@ if __name__ == "__main__":
         print("Expected:", centers.T[ind][0:3])
         pt[3]=1
         print("Result:", np.dot(arm_to_image, np.array(pt))[0:3])
+
+    if ra.camPt != [-2, -2, -2]:
+
+        pass
+        # 让机械臂移动到鼠标点击的点的位置

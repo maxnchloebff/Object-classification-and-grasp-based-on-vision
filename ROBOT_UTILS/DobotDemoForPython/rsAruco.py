@@ -10,10 +10,18 @@ import time
 import pyrealsense2 as rs
 import numpy as np
 import cv2
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import cv2.aruco as aruco
 # get_ipython().run_line_magic('matplotlib', 'inline')
 center = np.array([1, 2, 3], dtype='float64')
+mousePos = [-1, -1]
+camPt = np.array([-2, -2, -2])
+
+
+def mouseCallback(event, x, y, flags, param):
+    global mousePos
+    if event == cv2.EVENT_FLAG_LBUTTON:
+        mousePos = [x, y]
 
 
 class cameraDetection (threading.Thread):
@@ -27,6 +35,8 @@ class cameraDetection (threading.Thread):
         self.__running.set()      # 将running设置为True
 
     def run(self):
+        global mousePos, camPt
+
         pipeline = rs.pipeline()
         config = rs.config()
         config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
@@ -39,9 +49,11 @@ class cameraDetection (threading.Thread):
 #         stream = pipeline.get_stream(rs.stream.depth)
 #         intrinsics = stream.get_intrinsics()
         ##########################
+        cv2.namedWindow('Detection', cv2.WINDOW_AUTOSIZE)
+        cv2.setMouseCallback('Detection', mouseCallback)
+        mousePosPrev = mousePos
 
         while cv2.waitKey(1) < 0 and self.__running.isSet():
-            global color_image
             self.__flag.wait()      # 为True时立即返回, 为False时阻塞直到内部的标识位为True后返回
             # Wait for a coherent pair of frames: depth and color
             frames = pipeline.wait_for_frames()
@@ -55,23 +67,10 @@ class cameraDetection (threading.Thread):
             # Convert images to numpy arrays
             depth_image = np.asanyarray(depth_frame.get_data())
             color_image = np.asanyarray(color_frame.get_data())
-            # print(depth_image.shape)
-            # print(color_image.shape)
 
             # Apply colormap on depth image (image must be converted to 8-bit per pixel first)
             # depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
-            # Stack both images horizontally
             # images = np.hstack((color_image, depth_colormap))
-
-            # Show images
-            # cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
-            # cv2.imshow("RealSense", images)
-            # plt.figure(1)
-            # plt.subplot(121)
-            # plt.imshow(color_image)
-            # plt.subplot(122)
-            # plt.imshow(depth_image)
-            # cv2.waitKey(1)
 
             # Our operations on the frame come here
             gray = cv2.cvtColor(color_image, cv2.COLOR_BGR2GRAY)
@@ -81,7 +80,6 @@ class cameraDetection (threading.Thread):
 
             # lists of ids and the corners belonging to each id
             corners, ids, projectedImgPoints = aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
-        #         print(corners)
             if len(corners) != 0:
                 point = np.average(corners[0][0], axis=0)
                 depth = depth_frame.get_distance(point[0], point[1])
@@ -100,15 +98,24 @@ class cameraDetection (threading.Thread):
                     # print(center)
                     color_image = aruco.drawDetectedMarkers(color_image, corners)
 
-#                     cv2.imwrite('./color.jpg',color_image)
-
             # print(projectedImgPoints)
             # Display the resulting frame
             # print("about to show!")
             # cv2.startWindowThread()
 
+            if mousePos != [-1, -1] and mousePos != mousePosPrev:
+                # means we have clicked a point
+                depth_clickPt = depth_frame.get_distance(mousePos[0], mousePos[1])
+                if depth_clickPt != 0:
+                    camPt = rs.rs2_deproject_pixel_to_point(color_intrinsics, mousePos, depth_clickPt)
+                    camPt = np.array(camPt) * 1000
+                    mousePosPrev = mousePos
+                else:
+                    print("The clicked point's depth is zero")
+
         #  if uncommented, crash!!!
-            cv2.namedWindow('Detection', cv2.WINDOW_AUTOSIZE)
+            cv2.putText(color_image, str(mousePos), (20, 20), cv2.FONT_HERSHEY_PLAIN, 0.75, (0, 255, 0))
+            cv2.putText(color_image, str(camPt), (20, 30), cv2.FONT_HERSHEY_PLAIN, 0.75, (0, 255, 0))
             cv2.imshow("Detection", color_image)
             cv2.waitKey(1)
 
@@ -126,9 +133,6 @@ class cameraDetection (threading.Thread):
     def stop(self):
         self.__flag.set()       # 将线程从暂停状态恢复, 如何已经暂停的话
         self.__running.clear()        # 设置为False  
-
-
-# In[ ]:
 
 
 def main():
