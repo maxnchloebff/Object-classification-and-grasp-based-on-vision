@@ -36,6 +36,10 @@ And the methods controlling this pin are now encapsulated to *myapi.py*, which h
 
 
 
+**NOTE: Maybe it cannot actuate the electromagnet for its low current.**
+
+
+
 # Logic of Program
 
 See the semi-pseudo python code below for the logic of the program.
@@ -119,4 +123,10 @@ I tested the IO multiplexing code, and it has been proven that this is applicabl
 Calibration of arm coordinates and vision coordinates is done. It need to improve precision, though.
 
 Further, as the whole encapsulation is tested generally, I commented all commands with stdout output such as `print`, which are set for the convenience of debugging.
+
+## 2019/12/10
+
+Calibration file improved.
+
+But tests have shown that the electromagnet doesn't work. Maybe the way we use it is incorrect. I will test it further after consort to the Internet. If it doesn't work either, I will try to buy a new one which has higher quality (with a higher price).
 
