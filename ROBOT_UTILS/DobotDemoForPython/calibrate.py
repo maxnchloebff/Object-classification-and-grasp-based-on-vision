@@ -17,10 +17,11 @@ if __name__ == "__main__":
     dobot.initialize()
     dobot.set_home()
 
-    default_cali_points = [[180, -60, 35, 0], [270, -60, 35, 0],
-                           [180, 60, 35, 0], [270, 60, 35, 0],
-                           [270, 60, -5, 0], [180, 60, -5, 0],
-                           [180, -60, -5, 0], [270, -60, -5, 0]]
+    default_cali_points = [[180, -60, -5, 0], [270, -60, -5, 0],
+                           [180, 60, -5, 0], [270, 60, -5, 0],
+                           [270, 80, 35, 0], [180, 80, 35, 0],
+                           [180, -80, 35, 0], [270, -80, 35, 0],
+                           ]
                            # [200, 150, -5, 0], [250, 150, -5, 0],
                            # [150, 150, 115, 0], [175, 150, 115, 0],
                            # [200, -150, -5, 0], [250, -150, -5, 0],
@@ -79,7 +80,7 @@ if __name__ == "__main__":
             arm_pos = image_to_arm @ np.append(np.array(ra.camPt), 1)
             arm_pos[3] = 0
             print("arm_pos", arm_pos)
-            arm_pos[2] += 50
+            arm_pos[2] += 150
             dobot.start_execute_cmd()
             dobot.move(arm_pos, mode=1, is_immediate=True)
             time.sleep(2)

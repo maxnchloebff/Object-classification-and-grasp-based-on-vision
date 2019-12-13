@@ -6,6 +6,7 @@
 # import import_ipynb
 import threading
 import time
+import matplotlib.pyplot as plt
 
 import pyrealsense2 as rs
 import numpy as np
@@ -16,12 +17,18 @@ import cv2.aruco as aruco
 center = np.array([1, 2, 3], dtype='float64')
 mousePos = [-1, -1]
 camPt = np.array([-2, -2, -2])
+is_right = False
 
 
 def mouseCallback(event, x, y, flags, param):
     global mousePos
+    global is_right
     if event == cv2.EVENT_FLAG_LBUTTON:
         mousePos = [x, y]
+        is_right = False
+    if event == cv2.EVENT_FLAG_RBUTTON:
+        mousePos = [x, y]
+        is_right = True
 
 
 class cameraDetection (threading.Thread):
@@ -33,6 +40,7 @@ class cameraDetection (threading.Thread):
         self.__flag.set()       # 设置为True
         self.__running = threading.Event()      # 用于停止线程的标识
         self.__running.set()      # 将running设置为True
+        self.mouse_click_count = 0
 
     def run(self):
         global mousePos, camPt
@@ -63,7 +71,7 @@ class cameraDetection (threading.Thread):
             
             # get intrinsic of color image
             color_intrinsics = color_frame.profile.as_video_stream_profile().intrinsics
-            
+
             # Convert images to numpy arrays
             depth_image = np.asanyarray(depth_frame.get_data())
             color_image = np.asanyarray(color_frame.get_data())
@@ -107,9 +115,20 @@ class cameraDetection (threading.Thread):
                 # means we have clicked a point
                 depth_clickPt = depth_frame.get_distance(mousePos[0], mousePos[1])
                 if depth_clickPt != 0:
-                    camPt = rs.rs2_deproject_pixel_to_point(color_intrinsics, mousePos, depth_clickPt)
+                    camPt = rs.rs2_deproject_pixel_to_point(color_intrinsics, [mousePos[0], 480-mousePos[1]],
+                                                            depth_clickPt)
                     camPt = np.array(camPt) * 1000
+
+                    depth_image_obj = depth_image[mousePos[0]-40:mousePos[0]+40, mousePos[1]-40:mousePos[1]+40]
+                    np.save('build/depth_image_obj'+str(self.mouse_click_count)+'.npy', depth_image_obj)
+                    np.save('build/depth_image_global.npy', depth_image)
+
+                    if is_right:
+                        plt.imshow(depth_image)
+                        plt.show()
+
                     mousePosPrev = mousePos
+                    self.mouse_click_count += 1
                 else:
                     print("The clicked point's depth is zero")
 
