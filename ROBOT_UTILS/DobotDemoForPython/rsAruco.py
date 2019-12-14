@@ -115,11 +115,11 @@ class cameraDetection (threading.Thread):
                 # means we have clicked a point
                 depth_clickPt = depth_frame.get_distance(mousePos[0], mousePos[1])
                 if depth_clickPt != 0:
-                    camPt = rs.rs2_deproject_pixel_to_point(color_intrinsics, [mousePos[0], 480-mousePos[1]],
+                    camPt = rs.rs2_deproject_pixel_to_point(color_intrinsics, [mousePos[0], mousePos[1]],
                                                             depth_clickPt)
                     camPt = np.array(camPt) * 1000
 
-                    depth_image_obj = depth_image[mousePos[0]-40:mousePos[0]+40, mousePos[1]-40:mousePos[1]+40]
+                    depth_image_obj = depth_image[mousePos[1]-40:mousePos[1]+40, mousePos[0]-40:mousePos[0]+40]
                     np.save('build/depth_image_obj'+str(self.mouse_click_count)+'.npy', depth_image_obj)
                     np.save('build/depth_image_global.npy', depth_image)
 
@@ -130,6 +130,7 @@ class cameraDetection (threading.Thread):
                     mousePosPrev = mousePos
                     self.mouse_click_count += 1
                 else:
+                    mousePosPrev = mousePos
                     print("The clicked point's depth is zero")
 
         #  if uncommented, crash!!!
