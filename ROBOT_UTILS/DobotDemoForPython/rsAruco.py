@@ -61,8 +61,11 @@ class cameraDetection (threading.Thread):
         cv2.setMouseCallback('Detection', mouseCallback)
         mousePosPrev = mousePos
 
-        while cv2.waitKey(1) < 0 and self.__running.isSet():
-            self.__flag.wait()      # 为True时立即返回, 为False时阻塞直到内部的标识位为True后返回
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        video_out = cv2.VideoWriter('video.mp4', fourcc, 24.0, (640, 480))
+
+        while cv2.waitKey(1) != 27 and self.__running.isSet():
+            self.__flag.wait()  # 为True时立即返回, 为False时阻塞直到内部的标识位为True后返回
             # Wait for a coherent pair of frames: depth and color
             frames = pipeline.wait_for_frames()
             frames = align.process(frames)
@@ -136,11 +139,13 @@ class cameraDetection (threading.Thread):
         #  if uncommented, crash!!!
             cv2.putText(color_image, str(mousePos), (20, 20), cv2.FONT_HERSHEY_PLAIN, 0.75, (0, 255, 0))
             cv2.putText(color_image, str(camPt), (20, 30), cv2.FONT_HERSHEY_PLAIN, 0.75, (0, 255, 0))
+            video_out.write(color_image)
             cv2.imshow("Detection", color_image)
             cv2.waitKey(1)
 
         # Stop streaming
         cv2.destroyAllWindows()
+        video_out.release()
         pipeline.stop()
         time.sleep(1)
 
