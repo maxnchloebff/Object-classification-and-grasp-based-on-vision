@@ -62,7 +62,7 @@ class cameraDetection (threading.Thread):
         mousePosPrev = mousePos
 
         # fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        # video_out = cv2.VideoWriter('video.mp4', fourcc, 24.0, (640, 480))
+        # video_out = cv2.VideoWriter('build/video.mp4', fourcc, 24.0, (640, 480))
 
         while cv2.waitKey(1) != 27 and self.__running.isSet():
             self.__flag.wait()  # 为True时立即返回, 为False时阻塞直到内部的标识位为True后返回

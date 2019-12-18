@@ -1,2 +1,3 @@
 DobotControl/.idea/
-DobotControl/*.mp4
+DobotControl/build/
+DobotControl/__pycache__/
