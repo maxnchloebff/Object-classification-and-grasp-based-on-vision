@@ -70,7 +70,7 @@ if __name__ == "__main__":
     print("-------------------")
     print("示教运动")
     print("-------------------")
-    np.save("image_to_arm.npy", image_to_arm)
+    np.save("build/image_to_arm.npy", image_to_arm)
     old_camPt = np.array([-1, -1, -1])
     while True:
         # 让机械臂移动到鼠标点击的点的位置
@@ -82,9 +82,14 @@ if __name__ == "__main__":
             print("arm_pos", arm_pos)
             arm_pos[2] += 150
             dobot.start_execute_cmd()
-            dobot.move(arm_pos, mode=1, is_immediate=True)
+            dobot.move(arm_pos, mode=1, is_immediate=True)  # 这里可能会导致报警
             time.sleep(2)
             dobot.move(np.array([0, 0, -30, 0]), mode=7, is_immediate=True)
             time.sleep(1)
             dobot.move(np.array([0, 0, 50, 0]), mode=7, is_immediate=True)
             old_camPt = ra.camPt
+
+            alarm_state = dobot.get_alarm_state()
+            if alarm_state[2] == 2:  # 当需要机械臂前往的点机械臂认为自己无法到达时，会有这个报警，同时指示灯变红。
+                dobot.clear_alarms()
+                print("Alarm State Cleared (alarm due to a given pos out of range)")

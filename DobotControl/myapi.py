@@ -193,6 +193,15 @@ class DobotMagician:
         self.last_index = dType.SetIODO(self.api, pin, level, isQueued=not is_immediate)[0]
         self.wait_for_command_execution(is_immediate)
 
+    def get_alarm_state(self):
+        """
+        目前返回的为具有两个元素的list，两个元素代表的含义未知。
+        """
+        return dType.GetAlarmsState(self.api)[0]
+
+    def clear_alarms(self):
+        dType.ClearAllAlarmsState(self.api)
+
 
 if __name__ == "__main__":
     dobot = DobotMagician()
