@@ -61,8 +61,8 @@ class cameraDetection (threading.Thread):
         cv2.setMouseCallback('Detection', mouseCallback)
         mousePosPrev = mousePos
 
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        video_out = cv2.VideoWriter('video.mp4', fourcc, 24.0, (640, 480))
+        # fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        # video_out = cv2.VideoWriter('video.mp4', fourcc, 24.0, (640, 480))
 
         while cv2.waitKey(1) != 27 and self.__running.isSet():
             self.__flag.wait()  # 为True时立即返回, 为False时阻塞直到内部的标识位为True后返回
@@ -125,6 +125,7 @@ class cameraDetection (threading.Thread):
                     depth_image_obj = depth_image[mousePos[1]-40:mousePos[1]+40, mousePos[0]-40:mousePos[0]+40]
                     np.save('build/depth_image_obj'+str(self.mouse_click_count)+'.npy', depth_image_obj)
                     np.save('build/depth_image_global.npy', depth_image)
+                    cv2.imwrite('build/ImageCaptured'+str(self.mouse_click_count)+'.png', color_image)
 
                     if is_right:
                         plt.imshow(depth_image)
@@ -139,13 +140,13 @@ class cameraDetection (threading.Thread):
         #  if uncommented, crash!!!
             cv2.putText(color_image, str(mousePos), (20, 20), cv2.FONT_HERSHEY_PLAIN, 0.75, (0, 255, 0))
             cv2.putText(color_image, str(camPt), (20, 30), cv2.FONT_HERSHEY_PLAIN, 0.75, (0, 255, 0))
-            video_out.write(color_image)
+            # video_out.write(color_image)
             cv2.imshow("Detection", color_image)
             cv2.waitKey(1)
 
         # Stop streaming
         cv2.destroyAllWindows()
-        video_out.release()
+        # video_out.release()
         pipeline.stop()
         time.sleep(1)
 
