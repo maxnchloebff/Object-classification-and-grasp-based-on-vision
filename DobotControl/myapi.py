@@ -1,6 +1,11 @@
 """
 Author: Terence
 单位一般均为毫米
+
+关于队列指令与其他类型指令：队列指令正常，立即指令首先运行start_execute_cmd，然后运行各个指令，immediate和非immediate均可。
+其中，immediate表示pc端程序等待机械臂此条执行完毕，非immediate表示不等待，直接传下一个指令。
+对于end_control可能存在问题：如果等待的话会永远停止程序，因为这个指令并没有结束状态（一旦执行泵将会一直处于打开状态，将会一直等下去），所以immediate不能为true
+end_control 中返回的last_index为0，但是执行后current_index自增1
 """
 
 import DobotDllType as dType
@@ -78,8 +83,13 @@ class DobotMagician:
         """
         if is_immediate:
             # print("inside if")
-            while dType.GetQueuedCmdCurrentIndex(self.api)[0] > self.last_index:
+            # print("Inside wait for command execution")
+            current_index = dType.GetQueuedCmdCurrentIndex(self.api)[0]
+            # print("current_index: ", current_index)
+            while current_index < self.last_index:
+                print("waiting for Dobot")
                 time.sleep(0.2)
+                current_index = dType.GetQueuedCmdCurrentIndex(self.api)[0]
 
     def move(self, pos, mode=1, is_immediate=False):
         self.last_index = dType.SetPTPCmd(self.api, mode, *pos, isQueued=not is_immediate)[0]

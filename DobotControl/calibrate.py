@@ -1,6 +1,6 @@
 import time
 import rsAruco as ra
-import cv2
+# import cv2
 import numpy as np
 
 from myapi import DobotMagician
@@ -80,13 +80,17 @@ if __name__ == "__main__":
             arm_pos = image_to_arm @ np.append(np.array(ra.camPt), 1)
             arm_pos[3] = 0
             print("arm_pos", arm_pos)
-            arm_pos[2] += 150
+            arm_pos[2] += 100  # 这是用卷尺测量的结果
+            # arm_pos[2] += 150
             dobot.start_execute_cmd()
-            dobot.move(arm_pos, mode=1, is_immediate=True)  # 这里可能会导致报警
-            time.sleep(2)
-            dobot.move(np.array([0, 0, -30, 0]), mode=7, is_immediate=True)
+            dobot.move(arm_pos, mode=0, is_immediate=True)  # JUMP_PTP
             time.sleep(1)
-            dobot.move(np.array([0, 0, 50, 0]), mode=7, is_immediate=True)
+            dobot.end_control(on=True, is_immediate=False)
+            # dobot.move(np.array([0, 0, -30, 0]), mode=7, is_immediate=True)
+            time.sleep(5)
+            dobot.move(dobot.des_pos, mode=0, is_immediate=True)
+            time.sleep(1)
+            dobot.end_control(on=False, is_immediate=False)
             old_camPt = ra.camPt
 
             alarm_state = dobot.get_alarm_state()
