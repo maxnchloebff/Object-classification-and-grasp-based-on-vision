@@ -4,7 +4,7 @@ import rsAruco as ra
 import time
 
 thread1 = ra.cameraDetection(1, "rsArucoDetection")
-if not thread1.isAlive():
+if not thread1.is_alive():
     print("camera starts!")
     thread1.start()
 

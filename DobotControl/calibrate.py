@@ -40,6 +40,15 @@ if __name__ == "__main__":
         time.sleep(2)
         centers[0:3, ind] = ra.center * 1000
         print(ra.center)
+    # delete coordinates which resulted from no detection of markers
+    cols_to_delete = []
+    for i in range(len(centers.transpose())):
+        if (centers[0:3, i]==np.array([0, 0, 0])).all():
+            centers = np.delete(centers, i, axis=1)
+            cols_to_delete.append(i)
+    centers = np.delete(centers, cols_to_delete, axis=1)
+    arm_cord = np.delete(arm_cord, cols_to_delete, axis=1)
+
 
     image_to_arm = np.dot(arm_cord, np.linalg.pinv(centers))
     arm_to_image = np.linalg.pinv(image_to_arm)

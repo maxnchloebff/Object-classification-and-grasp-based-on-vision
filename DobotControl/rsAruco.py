@@ -14,7 +14,7 @@ import cv2
 # import matplotlib.pyplot as plt
 import cv2.aruco as aruco
 # get_ipython().run_line_magic('matplotlib', 'inline')
-center = np.array([1, 2, 3], dtype='float64')
+center = np.array([0, 0, 0], dtype='float64')
 mousePos = [-1, -1]
 camPt = np.array([-2, -2, -2])
 is_right = False
@@ -90,7 +90,7 @@ class cameraDetection (threading.Thread):
             parameters = aruco.DetectorParameters_create()
 
             # lists of ids and the corners belonging to each id
-            corners, ids, projectedImgPoints = aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
+            corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
             if len(corners) != 0:
                 point = np.average(corners[0][0], axis=0)
                 depth = depth_frame.get_distance(point[0], point[1])
@@ -108,8 +108,11 @@ class cameraDetection (threading.Thread):
                     center = np.array([x, y, z])
                     # print(center)
                     color_image = aruco.drawDetectedMarkers(color_image, corners)
+            else:
+                center = np.array([0, 0, 0])  # for the convenience of later processing: abandon points resulted from
+                # no makers detected
 
-            # print(projectedImgPoints)
+            # print(rejectedImgPoints)
             # Display the resulting frame
             # print("about to show!")
             # cv2.startWindowThread()
